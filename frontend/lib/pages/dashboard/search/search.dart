@@ -3,6 +3,8 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'services/product_service.dart';
 import 'product_details_page.dart';
+import 'product_not_found_page.dart';
+import 'search_results_page.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key});
@@ -63,7 +65,7 @@ class _SearchPageState extends State<SearchPage> with WidgetsBindingObserver {
   }
 
   void _onBarcodeDetect(BarcodeCapture capture) {
-    if (!_isScanning) return;
+    if (!_isScanning || _isLoading) return;
 
     final List<Barcode> barcodes = capture.barcodes;
     if (barcodes.isNotEmpty) {
@@ -91,49 +93,73 @@ class _SearchPageState extends State<SearchPage> with WidgetsBindingObserver {
     }
   }
 
-  Future<void> _fetchProductDetails(String barcode) async {
+  Future<void> _fetchProductDetails(String query) async {
     if (_isLoading) return;
 
     setState(() {
       _isLoading = true;
     });
 
-    final response = await _productService.getProductDetails(barcode);
+    // Determine if the query is a barcode (numeric) or text search
+    final isBarcode = RegExp(r'^[0-9]+$').hasMatch(query);
 
-    if (!mounted) return;
+    if (isBarcode) {
+      // Barcode search - get single product from backend
+      final response = await _productService.getProductDetails(query);
 
-    setState(() {
-      _isLoading = false;
-    });
+      if (!mounted) return;
 
-    if (response.success && response.data != null) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => ProductDetailsPage(
-            productDetails: response.data!,
+      setState(() {
+        _isLoading = false;
+      });
+
+      if (response.success && response.data != null) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) =>
+                ProductDetailsPage(productDetails: response.data!),
           ),
-        ),
-      );
+        );
+      } else {
+        // Show ProductNotFoundPage instead of SnackBar
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ProductNotFoundPage(searchQuery: query),
+          ),
+        );
+      }
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(response.message),
-          duration: const Duration(seconds: 3),
-          backgroundColor: Colors.red[600],
-        ),
-      );
-    }
-  }
+      // Text search - get multiple products and show results page
+      final products = await _productService.searchProducts(query);
 
-  void _showScannedResult(String barcode) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Scanned: $barcode'),
-        duration: const Duration(seconds: 2),
-        backgroundColor: const Color(0xFF2C5F2D),
-      ),
-    );
+      if (!mounted) return;
+
+      setState(() {
+        _isLoading = false;
+      });
+
+      if (products != null && products.isNotEmpty) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => SearchResultsPage(
+              initialQuery: query,
+              initialResults: products,
+            ),
+          ),
+        );
+      } else {
+        // Show ProductNotFoundPage when no results
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ProductNotFoundPage(searchQuery: query),
+          ),
+        );
+      }
+    }
   }
 
   @override

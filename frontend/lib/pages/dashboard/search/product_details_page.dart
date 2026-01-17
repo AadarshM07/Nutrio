@@ -2,14 +2,12 @@ import 'package:flutter/material.dart';
 import 'models/product_model.dart';
 import 'widgets/expandable_section.dart';
 import 'widgets/nutrition_widgets.dart';
+import 'compare_product_selection_page.dart';
 
 class ProductDetailsPage extends StatelessWidget {
   final ProductDetailsResponse productDetails;
 
-  const ProductDetailsPage({
-    super.key,
-    required this.productDetails,
-  });
+  const ProductDetailsPage({super.key, required this.productDetails});
 
   @override
   Widget build(BuildContext context) {
@@ -35,6 +33,41 @@ class ProductDetailsPage extends StatelessWidget {
               ),
               onPressed: () => Navigator.pop(context),
             ),
+            actions: [
+              Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: TextButton.icon(
+                  icon: const Icon(Icons.compare_arrows, color: Colors.white),
+                  label: const Text(
+                    'Compare',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  style: TextButton.styleFrom(
+                    backgroundColor: Colors.black.withOpacity(0.3),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                  ),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => CompareProductSelectionPage(
+                          firstProduct: productDetails,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
             flexibleSpace: FlexibleSpaceBar(
               background: Stack(
                 fit: StackFit.expand,
@@ -98,7 +131,7 @@ class ProductDetailsPage extends StatelessWidget {
                 children: [
                   // Product Name & Categories
                   _buildProductHeader(product),
-                  
+
                   const SizedBox(height: 16),
 
                   // AI Feedback Card
@@ -107,7 +140,7 @@ class ProductDetailsPage extends StatelessWidget {
                   const SizedBox(height: 16),
 
                   // Expandable Sections
-                  
+
                   // Nutrition Section
                   ExpandableSection(
                     title: 'Nutrition',
@@ -180,10 +213,7 @@ class ProductDetailsPage extends StatelessWidget {
               const SizedBox(width: 6),
               Text(
                 product.code,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey[600],
-                ),
+                style: TextStyle(fontSize: 14, color: Colors.grey[600]),
               ),
             ],
           ),
@@ -195,24 +225,26 @@ class ProductDetailsPage extends StatelessWidget {
               children: product.categories
                   .split(',')
                   .take(3)
-                  .map((category) => Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 4,
+                  .map(
+                    (category) => Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF2C5F2D).withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        category.trim(),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Color(0xFF2C5F2D),
+                          fontWeight: FontWeight.w500,
                         ),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF2C5F2D).withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Text(
-                          category.trim(),
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: Color(0xFF2C5F2D),
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ))
+                      ),
+                    ),
+                  )
                   .toList(),
             ),
           ],
@@ -226,10 +258,7 @@ class ProductDetailsPage extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [
-            const Color(0xFF2C5F2D),
-            const Color(0xFF4CAF50),
-          ],
+          colors: [const Color(0xFF2C5F2D), const Color(0xFF4CAF50)],
         ),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
@@ -319,7 +348,7 @@ class ProductDetailsPage extends StatelessWidget {
           level: product.nutrientLevels.salt,
           value: product.nutriments.salt100g,
         ),
-        
+
         const SizedBox(height: 20),
 
         // Nutrition Facts Table
@@ -344,7 +373,8 @@ class ProductDetailsPage extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (product.ingredientsText != null && product.ingredientsText!.isNotEmpty) ...[
+        if (product.ingredientsText != null &&
+            product.ingredientsText!.isNotEmpty) ...[
           Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
@@ -384,9 +414,9 @@ class ProductDetailsPage extends StatelessWidget {
             ),
           ),
         ],
-        
+
         const SizedBox(height: 16),
-        
+
         // Sugar Level indicator
         const Text(
           'Sugar Level',
@@ -405,7 +435,7 @@ class ProductDetailsPage extends StatelessWidget {
   Widget _buildSugarLevelIndicator(double sugars) {
     String level;
     Color color;
-    
+
     if (sugars <= 5) {
       level = 'Low';
       color = const Color(0xFF1E8F4E);
@@ -442,10 +472,7 @@ class ProductDetailsPage extends StatelessWidget {
                 ),
                 Text(
                   '${sugars.toStringAsFixed(1)}g per 100g',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey[600],
-                  ),
+                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                 ),
               ],
             ),
@@ -464,9 +491,9 @@ class ProductDetailsPage extends StatelessWidget {
           novaGroup: product.novaGroup,
           description: product.novaGroupDescription,
         ),
-        
+
         const SizedBox(height: 16),
-        
+
         // Analysis Tags
         const Text(
           'Ingredient Analysis',
@@ -477,7 +504,7 @@ class ProductDetailsPage extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 10),
-        
+
         Wrap(
           spacing: 10,
           runSpacing: 10,
@@ -514,11 +541,7 @@ class ProductDetailsPage extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            Icons.info_outline,
-            color: Colors.amber[800],
-            size: 20,
-          ),
+          Icon(Icons.info_outline, color: Colors.amber[800], size: 20),
           const SizedBox(width: 10),
           Expanded(
             child: Text(

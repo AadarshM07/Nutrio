@@ -4,7 +4,7 @@ import 'package:frontend/pages/auth/auth_service.dart';
 import 'package:frontend/pages/dashboard/dashboard.dart';
 import 'package:frontend/pages/survey/survey.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
+import 'package:openfoodfacts/openfoodfacts.dart'; 
 
 void main() {
   runApp(const MainApp());
@@ -29,26 +29,35 @@ class _MainAppState extends State<MainApp> {
   }
 
   Future<void> _initializeApp() async {
-    // 1. Load Onboarding Status
-    final prefs = await SharedPreferences.getInstance();
+    OpenFoodAPIConfiguration.userAgent = UserAgent(
+      name: 'FrontendApp', 
+      url: 'https://example.com', 
+    );
+    OpenFoodAPIConfiguration.globalLanguages = <OpenFoodFactsLanguage>[
+      OpenFoodFactsLanguage.ENGLISH
+    ];
+    OpenFoodAPIConfiguration.globalCountry = OpenFoodFactsCountry.UNITED_KINGDOM;
 
-    // 2. Initialize Auth (Load Token from Disk)
+    // 2. Load Preferences and Auth (Only once!)
+    final prefs = await SharedPreferences.getInstance();
     await AuthService().initialize();
 
     // 3. Validate Token with Backend
     bool loggedIn = false;
     bool surveyDone = false;
+    
     final response = await AuthService().validateToken();
     if (response.success) {
       loggedIn = true;
-      surveyDone = response.user!.isSurveyCompleted;
+      surveyDone = response.user?.isSurveyCompleted ?? false;
     }
 
+    // 4. Update UI State
     if (mounted) {
       setState(() {
         isAuthenticated = loggedIn;
         isSurveyCompleted = surveyDone;
-        isLoading = false; // App is ready to render
+        isLoading = false; 
       });
     }
   }

@@ -1,3 +1,5 @@
+import 'package:openfoodfacts/openfoodfacts.dart' as off;
+
 class NutrientLevels {
   final String fat;
   final String salt;
@@ -112,8 +114,9 @@ class Product {
       categoriesTags: List<String>.from(json['categories_tags'] ?? []),
       code: json['code'] ?? '',
       imageUrl: json['image_url'],
-      ingredientsAnalysisTags:
-          List<String>.from(json['ingredients_analysis_tags'] ?? []),
+      ingredientsAnalysisTags: List<String>.from(
+        json['ingredients_analysis_tags'] ?? [],
+      ),
       ingredientsText: json['ingredients_text'],
       novaGroup: json['nova_group'] ?? 0,
       nutrientLevels: NutrientLevels.fromJson(json['nutrient_levels'] ?? {}),
@@ -124,10 +127,150 @@ class Product {
     );
   }
 
+  // Factory constructor to convert from OpenFoodFacts Product
+  factory Product.fromOpenFoodFactsProduct(off.Product offProduct) {
+    // Default nutrient levels to 'unknown' - will try to parse if available
+    final nutrientLevels = NutrientLevels(
+      fat: 'unknown',
+      salt: 'unknown',
+      saturatedFat: 'unknown',
+      sugars: 'unknown',
+    );
+
+    // Convert nutriments - safely get values using getValue method
+    final nutriments = Nutriments(
+      carbohydrates:
+          offProduct.nutriments?.getValue(
+            off.Nutrient.carbohydrates,
+            off.PerSize.serving,
+          ) ??
+          0,
+      carbohydrates100g:
+          offProduct.nutriments?.getValue(
+            off.Nutrient.carbohydrates,
+            off.PerSize.oneHundredGrams,
+          ) ??
+          0,
+      energyKcal:
+          offProduct.nutriments?.getValue(
+            off.Nutrient.energyKCal,
+            off.PerSize.serving,
+          ) ??
+          0,
+      energyKcal100g:
+          offProduct.nutriments?.getValue(
+            off.Nutrient.energyKCal,
+            off.PerSize.oneHundredGrams,
+          ) ??
+          0,
+      fat:
+          offProduct.nutriments?.getValue(
+            off.Nutrient.fat,
+            off.PerSize.serving,
+          ) ??
+          0,
+      fat100g:
+          offProduct.nutriments?.getValue(
+            off.Nutrient.fat,
+            off.PerSize.oneHundredGrams,
+          ) ??
+          0,
+      proteins:
+          offProduct.nutriments?.getValue(
+            off.Nutrient.proteins,
+            off.PerSize.serving,
+          ) ??
+          0,
+      proteins100g:
+          offProduct.nutriments?.getValue(
+            off.Nutrient.proteins,
+            off.PerSize.oneHundredGrams,
+          ) ??
+          0,
+      salt:
+          offProduct.nutriments?.getValue(
+            off.Nutrient.salt,
+            off.PerSize.serving,
+          ) ??
+          0,
+      salt100g:
+          offProduct.nutriments?.getValue(
+            off.Nutrient.salt,
+            off.PerSize.oneHundredGrams,
+          ) ??
+          0,
+      saturatedFat:
+          offProduct.nutriments?.getValue(
+            off.Nutrient.saturatedFat,
+            off.PerSize.serving,
+          ) ??
+          0,
+      saturatedFat100g:
+          offProduct.nutriments?.getValue(
+            off.Nutrient.saturatedFat,
+            off.PerSize.oneHundredGrams,
+          ) ??
+          0,
+      sugars:
+          offProduct.nutriments?.getValue(
+            off.Nutrient.sugars,
+            off.PerSize.serving,
+          ) ??
+          0,
+      sugars100g:
+          offProduct.nutriments?.getValue(
+            off.Nutrient.sugars,
+            off.PerSize.oneHundredGrams,
+          ) ??
+          0,
+      novaGroup: offProduct.novaGroup ?? 0,
+    );
+
+    // Get ingredients analysis tags - simplified version
+    List<String> getAnalysisTags() {
+      List<String> result = [];
+      try {
+        if (offProduct.ingredientsAnalysisTags?.veganStatus != null) {
+          result.add(
+            'en:${offProduct.ingredientsAnalysisTags!.veganStatus!.offTag}',
+          );
+        }
+        if (offProduct.ingredientsAnalysisTags?.vegetarianStatus != null) {
+          result.add(
+            'en:${offProduct.ingredientsAnalysisTags!.vegetarianStatus!.offTag}',
+          );
+        }
+        if (offProduct.ingredientsAnalysisTags?.palmOilFreeStatus != null) {
+          result.add(
+            'en:${offProduct.ingredientsAnalysisTags!.palmOilFreeStatus!.offTag}',
+          );
+        }
+      } catch (e) {
+        print('Error parsing analysis tags: $e');
+      }
+      return result;
+    }
+
+    return Product(
+      categories: offProduct.categories ?? '',
+      categoriesTags: offProduct.categoriesTags ?? [],
+      code: offProduct.barcode ?? '',
+      imageUrl: offProduct.imageFrontUrl,
+      ingredientsAnalysisTags: getAnalysisTags(),
+      ingredientsText: offProduct.ingredientsText,
+      novaGroup: offProduct.novaGroup ?? 0,
+      nutrientLevels: nutrientLevels,
+      nutriments: nutriments,
+      nutritionGrades: offProduct.nutriscore?.toUpperCase() ?? '',
+      productName: offProduct.productName ?? 'Unknown Product',
+      servingSize: offProduct.servingSize,
+    );
+  }
+
   // Helper methods for ingredient analysis
   bool get hasPalmOil =>
       ingredientsAnalysisTags.any((tag) => tag.contains('palm-oil'));
-  
+
   bool get isPalmOilFree =>
       ingredientsAnalysisTags.any((tag) => tag.contains('palm-oil-free'));
 
@@ -181,10 +324,7 @@ class ProductDetailsResponse {
   final Product product;
   final String aiFeedback;
 
-  ProductDetailsResponse({
-    required this.product,
-    required this.aiFeedback,
-  });
+  ProductDetailsResponse({required this.product, required this.aiFeedback});
 
   factory ProductDetailsResponse.fromJson(Map<String, dynamic> json) {
     return ProductDetailsResponse(
