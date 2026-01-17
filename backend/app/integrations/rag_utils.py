@@ -51,7 +51,7 @@ def get_relevant_passages(db, query, n_results=5, max_distance=0.8):
 
 def get_chroma_db(name):
     chroma_client = chromadb.PersistentClient(path="chroma-db/")
-    return chroma_client.get_collection(name=name, embedding_function=GeminiEmbeddingFunction())
+    return chroma_client.get_or_create_collection(name=name, embedding_function=GeminiEmbeddingFunction())
 
 if __name__== "__main__":
     db = get_chroma_db("disease-guidelines")

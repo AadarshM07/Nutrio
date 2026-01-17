@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'services/product_service.dart';
+import 'product_details_page.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key});
@@ -11,10 +13,12 @@ class SearchPage extends StatefulWidget {
 
 class _SearchPageState extends State<SearchPage> with WidgetsBindingObserver {
   final TextEditingController _searchController = TextEditingController();
+  final ProductService _productService = ProductService();
   String _searchQuery = '';
   late MobileScannerController _cameraController;
   bool _hasPermission = false;
   bool _isScanning = true;
+  bool _isLoading = false;
   String? _lastScannedCode;
 
   @override
@@ -81,9 +85,44 @@ class _SearchPageState extends State<SearchPage> with WidgetsBindingObserver {
           }
         });
 
-        // You can add logic here to fetch product info based on barcode
-        _showScannedResult(barcode.rawValue!);
+        // Fetch product info based on barcode
+        _fetchProductDetails(barcode.rawValue!);
       }
+    }
+  }
+
+  Future<void> _fetchProductDetails(String barcode) async {
+    if (_isLoading) return;
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    final response = await _productService.getProductDetails(barcode);
+
+    if (!mounted) return;
+
+    setState(() {
+      _isLoading = false;
+    });
+
+    if (response.success && response.data != null) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ProductDetailsPage(
+            productDetails: response.data!,
+          ),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(response.message),
+          duration: const Duration(seconds: 3),
+          backgroundColor: Colors.red[600],
+        ),
+      );
     }
   }
 
@@ -373,11 +412,13 @@ class _SearchPageState extends State<SearchPage> with WidgetsBindingObserver {
                           Padding(
                             padding: const EdgeInsets.all(8.0),
                             child: InkWell(
-                              onTap: () {
-                                if (_searchQuery.isNotEmpty) {
-                                  // Perform search
-                                }
-                              },
+                              onTap: _isLoading
+                                  ? null
+                                  : () {
+                                      if (_searchQuery.isNotEmpty) {
+                                        _fetchProductDetails(_searchQuery);
+                                      }
+                                    },
                               borderRadius: BorderRadius.circular(30),
                               child: Container(
                                 padding: const EdgeInsets.all(12),
@@ -385,11 +426,20 @@ class _SearchPageState extends State<SearchPage> with WidgetsBindingObserver {
                                   color: Color(0xFF2C5F2D),
                                   shape: BoxShape.circle,
                                 ),
-                                child: const Icon(
-                                  Icons.search,
-                                  color: Colors.white,
-                                  size: 24,
-                                ),
+                                child: _isLoading
+                                    ? const SizedBox(
+                                        width: 24,
+                                        height: 24,
+                                        child: CircularProgressIndicator(
+                                          color: Colors.white,
+                                          strokeWidth: 2,
+                                        ),
+                                      )
+                                    : const Icon(
+                                        Icons.search,
+                                        color: Colors.white,
+                                        size: 24,
+                                      ),
                               ),
                             ),
                           ),
