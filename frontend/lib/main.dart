@@ -79,7 +79,7 @@ class _MainAppState extends State<MainApp> {
       debugShowCheckedModeBanner: false,
       home: !isAuthenticated
           ? AuthPage(onAuthenticated: _onAuthenticated)
-          : onboarding
+          : !onboarding
               ? const Survey()//onComplete: _completeOnboarding
               : const Dashboard(),
     );
