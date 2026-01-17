@@ -26,3 +26,13 @@ class ChatHistory(SQLModel, table=True):
     timestamp: datetime = Field(default_factory=datetime.now)
 
 
+class Inventory(SQLModel, table=True):
+    user_id: int = Field(foreign_key="user.id")
+    barcode: str = Field(primary_key=str)
+    title: str
+    img: str
+    tag:str
+    nutrient_scrore:str
+    timestamp: datetime = Field(default_factory=datetime.now)
+
+

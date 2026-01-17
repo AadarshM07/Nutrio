@@ -183,6 +183,89 @@ class NutritionAnalyzer:
                 'success': False,
                 'response': "I'm having trouble connecting right now. Please try again."
             }
+        
+    def analyze_user_dashboard(self, user_profile: dict, inventory_items: list) -> dict:
+        """
+        Analyzes the user's entire inventory against their health profile 
+        to generate dashboard statistics.
+        """
+        # 1. Prepare Inventory Text
+        if not inventory_items:
+            return {
+                "health_breakdown": [],
+                "macro_distribution": [],
+                "ai_feedback": "Your inventory is empty. Add products to get an analysis."
+            }
+
+        inventory_text = "User's Current Pantry Inventory:\n"
+        for item in inventory_items:
+            # Note: nutrient_scrore is the typo from your model, keeping it consistent
+            inventory_text += f"- {item.title} (Tag: {item.tag}, Grade: {item.nutrient_scrore})\n"
+
+        # 2. Get RAG Context (General dietary guidelines for their condition)
+        disease = user_profile.get('disease', 'General Health')
+        search_query = f"Dietary guidelines for {disease} regarding pantry staples and macronutrient balance."
+        
+        relevant_guidelines = get_relevant_passages(self.db, search_query, n_results=3)
+        guidelines_text = "\n".join([f"- {g['content']}" for g in relevant_guidelines]) if relevant_guidelines else "General healthy eating guidelines."
+
+        # 3. Construct System Prompt for JSON Output
+        system_prompt = f"""
+        You are the backend AI for Nutrio. Your task is to analyze a user's food inventory and return a strictly formatted JSON response for a dashboard.
+
+        User Profile:
+        - Condition: {disease}
+        - Goals: {user_profile.get('goals')}
+        - Gender: {user_profile.get('gender')}
+        
+        Medical Guidelines (RAG Context):
+        {guidelines_text}
+
+        {inventory_text}
+
+        Task:
+        1. Classify the inventory items into "Beneficial", "Moderate", or "Avoid" based on the User Profile. Calculate the percentage of each.
+        2. Estimate the aggregate macronutrient profile (Protein, Carbs, Fats, Fiber) represented by this pantry.
+        3. Provide a short, actionable feedback summary (max 50 words) referring to specific items in their list.
+
+        OUTPUT FORMAT (STRICT JSON ONLY, NO MARKDOWN):
+        {{
+            "health_breakdown": [
+                {{"label": "Beneficial", "value": 60, "color": "#4CAF50"}},
+                {{"label": "Moderate", "value": 30, "color": "#FFC107"}},
+                {{"label": "Limit", "value": 10, "color": "#F44336"}}
+            ],
+            "macro_distribution": [
+                {{"label": "Protein", "value": 30, "color": "#2196F3"}},
+                {{"label": "Carbs", "value": 50, "color": "#FF9800"}},
+                {{"label": "Fats", "value": 20, "color": "#9C27B0"}}
+            ],
+            "ai_feedback": "Your summary here..."
+        }}
+        """
+
+        try:
+            # Using Gemini 1.5 Flash which is good at JSON
+            response = client.models.generate_content(
+                model='gemini-2.5-flash',
+                contents=system_prompt,
+                config=genai.types.GenerateContentConfig(
+                    response_mime_type="application/json" 
+                )
+            )
+            
+            # Parse JSON
+            data = json.loads(response.text)
+            return data
+            
+        except Exception as e:
+            print(f"Dashboard Analysis Error: {e}")
+            # Return fallback data
+            return {
+                "health_breakdown": [{"label": "Error", "value": 100, "color": "#9E9E9E"}],
+                "macro_distribution": [],
+                "ai_feedback": "Unable to generate analysis at the moment."
+            }
 
 
 def analyze_nutrition(nutrition:dict,disease:str,gender:str='male',goals:str='none',allergies:str='none') -> str:
@@ -204,3 +287,8 @@ def analyze_nutrition(nutrition:dict,disease:str,gender:str='male',goals:str='no
         if 'error' in result:
             print(f"Details: {result['error']}")
             return "Error"
+
+
+def generate_dashboard_stats(user: dict, inventory: list) -> dict:
+    analyzer = NutritionAnalyzer(db_name="disease-guidelines")
+    return analyzer.analyze_user_dashboard(user, inventory)
