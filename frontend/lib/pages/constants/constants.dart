@@ -1,2 +1,2 @@
 const String apiURL =
-    String.fromEnvironment("API_URL", defaultValue: "http://172.24.81.153:8000");
+    String.fromEnvironment("API_URL", defaultValue: "http://127.0.0.1:8000");

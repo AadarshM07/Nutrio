@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'dart:math' as math;
+
+import 'package:frontend/pages/dashboard/home/dashboard_model.dart';
+import 'package:frontend/pages/dashboard/home/dashboard_service.dart';
+
 
 class HomePage extends StatefulWidget {
   final VoidCallback? onChatTapped;
@@ -9,8 +14,40 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  DashboardData? _data;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    final data = await DashboardService().fetchDashboardStats();
+    if (mounted) {
+      setState(() {
+        _data = data;
+        _isLoading = false;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator(color: Colors.green));
+    }
+
+    // Fallback if API fails or returns null
+    final displayData = _data ?? DashboardData(
+      healthBreakdown: [
+        GraphDataPoint(label: "No Data", value: 100, color: Colors.grey.shade300)
+      ],
+      macroDistribution: [],
+      aiFeedback: "Could not load insights. Please check your connection or add items to your inventory.",
+    );
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -18,11 +55,11 @@ class _HomePageState extends State<HomePage> {
         children: [
           _buildAINutritionist(),
           const SizedBox(height: 24),
-          _buildHealthInsights(),
+          _buildHealthInsights(displayData),
           const SizedBox(height: 24),
-          _buildAIRecommendation(),
+          _buildAIRecommendation(displayData.aiFeedback),
           const SizedBox(height: 24),
-          _buildDailyEnergy(),
+          // _buildDailyEnergy(), // Optional: Keep or remove based on preference
         ],
       ),
     );
@@ -38,6 +75,13 @@ class _HomePageState extends State<HomePage> {
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.green.withOpacity(0.3),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          )
+        ],
       ),
       child: Row(
         children: [
@@ -55,7 +99,7 @@ class _HomePageState extends State<HomePage> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '"How much protein is in the boiled eggs"',
+                  '"Is this pasta healthy for my diabetes?"',
                   style: TextStyle(
                     fontSize: 12,
                     color: Colors.white.withOpacity(0.9),
@@ -70,6 +114,7 @@ class _HomePageState extends State<HomePage> {
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.white,
               foregroundColor: Colors.green,
+              elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
               ),
@@ -85,156 +130,127 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildHealthInsights() {
+  Widget _buildHealthInsights(DashboardData data) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          'Health Insights',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
+          'Inventory Health Analysis',
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 16),
-        Row(
-          children: [
-            Expanded(child: _buildBMICard()),
-            const SizedBox(width: 12),
-            Expanded(child: _buildRecentIntakeCard()),
-          ],
+        Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.grey.shade100),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.03),
+                blurRadius: 15,
+                offset: const Offset(0, 5),
+              )
+            ],
+          ),
+          child: Column(
+            children: [
+              // 1. Pie Chart Row
+              Row(
+                children: [
+                  // Chart
+                  SizedBox(
+                    width: 100,
+                    height: 100,
+                    child: CustomPaint(
+                      painter: DynamicDonutPainter(data.healthBreakdown),
+                      child: const Center(
+                        child: Text(
+                          "Pantry\nScore",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 24),
+                  // Legend
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: data.healthBreakdown.map((point) {
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 8.0),
+                          child: _buildLegendItem(
+                            "${point.label} (${point.value.toInt()}%)", 
+                            point.color
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+              const Divider(),
+              const SizedBox(height: 16),
+              
+              // 2. Macros Row (Bar indicators)
+              const Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  "Est. Macro Distribution",
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.grey),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: data.macroDistribution.map((macro) {
+                  return _buildMacroColumn(macro);
+                }).toList(),
+              ),
+            ],
+          ),
         ),
       ],
     );
   }
 
-  Widget _buildBMICard() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.grey[100],
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'CURRENT BMI',
-            style: TextStyle(
-              fontSize: 10,
-              color: Colors.grey[600],
-              letterSpacing: 0.5,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              const Text(
-                '22.4',
-                style: TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Padding(
-                padding: const EdgeInsets.only(bottom: 4),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: Colors.green[100],
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Text(
-                    'Normal',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.green[700],
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Text(
-                'Healthy range: ',
-                style: TextStyle(
-                  fontSize: 11,
-                  color: Colors.grey[600],
-                ),
-              ),
-              Text(
-                '18.5 – 24.9',
-                style: TextStyle(
-                  fontSize: 11,
-                  color: Colors.green[700],
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildRecentIntakeCard() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.grey[100],
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'RECENT INTAKE',
-            style: TextStyle(
-              fontSize: 10,
-              color: Colors.grey[600],
-              letterSpacing: 0.5,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Center(
-            child: SizedBox(
-              width: 80,
-              height: 80,
-              child: Stack(
-                children: [
-                  CustomPaint(
-                    size: const Size(80, 80),
-                    painter: DonutChartPainter(),
-                  ),
-                  const Center(
-                    child: Text(
-                      'Mix',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
+  Widget _buildMacroColumn(GraphDataPoint macro) {
+    return Column(
+      children: [
+        Stack(
+          alignment: Alignment.bottomCenter,
+          children: [
+            Container(
+              width: 8,
+              height: 60,
+              decoration: BoxDecoration(
+                color: Colors.grey[100],
+                borderRadius: BorderRadius.circular(4),
               ),
             ),
-          ),
-          const SizedBox(height: 12),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildLegendItem('Veggies', Colors.green),
-              _buildLegendItem('Carbs', Colors.orange),
-            ],
-          ),
-        ],
-      ),
+            Container(
+              width: 8,
+              height: (60 * (macro.value / 100)).clamp(0, 60), // Simple scaling
+              decoration: BoxDecoration(
+                color: macro.color,
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Text(
+          macro.label,
+          style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+        ),
+        Text(
+          "${macro.value.toInt()}%",
+          style: TextStyle(fontSize: 10, color: Colors.grey[600]),
+        ),
+      ],
     );
   }
 
@@ -242,31 +258,29 @@ class _HomePageState extends State<HomePage> {
     return Row(
       children: [
         Container(
-          width: 8,
-          height: 8,
+          width: 10,
+          height: 10,
           decoration: BoxDecoration(
             color: color,
             shape: BoxShape.circle,
           ),
         ),
-        const SizedBox(width: 4),
+        const SizedBox(width: 8),
         Text(
           label,
-          style: TextStyle(
-            fontSize: 10,
-            color: Colors.grey[600],
-          ),
+          style: TextStyle(fontSize: 12, color: Colors.grey[800], fontWeight: FontWeight.w500),
         ),
       ],
     );
   }
 
-  Widget _buildAIRecommendation() {
+  Widget _buildAIRecommendation(String feedback) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.green[50],
-        borderRadius: BorderRadius.circular(12),
+        color: const Color(0xFFE8F5E9), // Light Green BG
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.green.withOpacity(0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -274,113 +288,32 @@ class _HomePageState extends State<HomePage> {
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
+                padding: const EdgeInsets.all(6),
+                decoration: const BoxDecoration(
                   color: Colors.green,
-                  borderRadius: BorderRadius.circular(8),
+                  shape: BoxShape.circle,
                 ),
-                child: const Icon(
-                  Icons.auto_awesome,
-                  color: Colors.white,
-                  size: 20,
-                ),
+                child: const Icon(Icons.psychology, color: Colors.white, size: 16),
               ),
-              const SizedBox(width: 12),
-              const Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'AI Personal Recommendation',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(
-                      'Your recent active HR & METABOLISM',
-                      style: TextStyle(
-                        fontSize: 10,
-                        color: Colors.grey,
-                      ),
-                    ),
-                  ],
+              const SizedBox(width: 10),
+              const Text(
+                'AI Analysis',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.green,
                 ),
               ),
             ],
           ),
           const SizedBox(height: 12),
-          const Text(
-            'Your recent active heart rate suggests a higher caloric burn. Consider a Protein-Rich Snack within the next hour to support muscle recovery and maintain your steady BMI trend.',
-            style: TextStyle(
-              fontSize: 13,
+          Text(
+            feedback,
+            style: const TextStyle(
+              fontSize: 14,
               height: 1.5,
+              color: Colors.black87,
             ),
-          ),
-          const SizedBox(height: 16),
-          Align(
-            alignment: Alignment.centerRight,
-            child: TextButton(
-              onPressed: () {},
-              style: TextButton.styleFrom(
-                backgroundColor: Colors.green[100],
-                foregroundColor: Colors.green[700],
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              child: const Text(
-                'Show recommended snacks',
-                style: TextStyle(fontWeight: FontWeight.w500),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDailyEnergy() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.grey[100],
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          const Text(
-            'Daily Energy',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          Row(
-            children: [
-              Text(
-                '650 left',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.green[700],
-                ),
-              ),
-              const SizedBox(width: 8),
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.green,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(
-                  Icons.add,
-                  color: Colors.white,
-                  size: 20,
-                ),
-              ),
-            ],
           ),
         ],
       ),
@@ -388,48 +321,46 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-// Custom painter for donut chart
-class DonutChartPainter extends CustomPainter {
+// --- Dynamic Painter for the Donut Chart ---
+class DynamicDonutPainter extends CustomPainter {
+  final List<GraphDataPoint> data;
+
+  DynamicDonutPainter(this.data);
+
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 12;
+      ..strokeWidth = 12
+      ..strokeCap = StrokeCap.round;
 
     final center = Offset(size.width / 2, size.height / 2);
     final radius = size.width / 2 - 6;
 
-    // Green segment (Veggies)
-    paint.color = Colors.green;
-    canvas.drawArc(
-      Rect.fromCircle(center: center, radius: radius),
-      -1.5,
-      2.5,
-      false,
-      paint,
-    );
+    double startAngle = -math.pi / 2; // Start from top
 
-    // Orange segment (Carbs)
-    paint.color = Colors.orange;
-    canvas.drawArc(
-      Rect.fromCircle(center: center, radius: radius),
-      1.0,
-      2.0,
-      false,
-      paint,
-    );
+    // Calculate total value to normalize percentages if they don't add up to 100
+    double total = data.fold(0, (sum, item) => sum + item.value);
+    if (total == 0) total = 1;
 
-    // Grey segment (remaining)
-    paint.color = Colors.grey[300]!;
-    canvas.drawArc(
-      Rect.fromCircle(center: center, radius: radius),
-      3.0,
-      3.28,
-      false,
-      paint,
-    );
+    for (var item in data) {
+      final sweepAngle = (item.value / total) * 2 * math.pi;
+      
+      paint.color = item.color;
+      
+      // Draw arc with a small gap for visual separation
+      canvas.drawArc(
+        Rect.fromCircle(center: center, radius: radius),
+        startAngle + 0.05, // Small gap start
+        sweepAngle - 0.05, // Small gap end
+        false,
+        paint,
+      );
+
+      startAngle += sweepAngle;
+    }
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
