@@ -1,5 +1,6 @@
 import 'dart:ui'; // Required for ImageFilter
 import 'package:flutter/material.dart';
+import 'package:frontend/pages/survey/survey.dart';
 import './auth_service.dart';
 import './auth_widgets.dart';
 
@@ -7,16 +8,20 @@ class SignInPage extends StatefulWidget {
   final VoidCallback onTap;
   final VoidCallback authoriseUser;
 
-  const SignInPage({super.key, required this.onTap, required this.authoriseUser});
+  const SignInPage({
+    super.key,
+    required this.onTap,
+    required this.authoriseUser,
+  });
 
   @override
   State<SignInPage> createState() => _SignInPageState();
 }
 
 class _SignInPageState extends State<SignInPage> {
-  final _emailController = TextEditingController(); 
+  final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  
+
   // Define the Primary Color from your palette
   final Color primaryColor = const Color(0xFF29A38F);
 
@@ -36,10 +41,22 @@ class _SignInPageState extends State<SignInPage> {
     if (mounted) {
       setState(() => _isLoading = false);
       if (response.success) {
-        widget.authoriseUser();
+        final user = AuthService().currentUser;
+
+        if (user != null && user.isSurveyCompleted) {
+          widget.authoriseUser();
+        } else {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const Survey()),
+          );
+        }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(response.message), backgroundColor: Colors.red),
+          SnackBar(
+            content: Text(response.message),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     }
@@ -51,12 +68,9 @@ class _SignInPageState extends State<SignInPage> {
       body: Stack(
         children: [
           Positioned.fill(
-            child: Image.asset(
-              'assets/bg.png',
-              fit: BoxFit.cover,
-            ),
+            child: Image.asset('assets/bg.png', fit: BoxFit.cover),
           ),
-          
+
           SafeArea(
             child: Center(
               child: SingleChildScrollView(
@@ -72,9 +86,12 @@ class _SignInPageState extends State<SignInPage> {
                           filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                           child: Container(
                             width: double.infinity,
-                            padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 24),
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 40,
+                              horizontal: 24,
+                            ),
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.2), 
+                              color: Colors.white.withOpacity(0.2),
                               borderRadius: BorderRadius.circular(24),
                               border: Border.all(
                                 color: Colors.white.withOpacity(0.3),
@@ -87,32 +104,34 @@ class _SignInPageState extends State<SignInPage> {
                                   height: 80,
                                   width: 80,
                                   decoration: const BoxDecoration(
-                                    color: Colors.white, 
+                                    color: Colors.white,
                                     shape: BoxShape.circle,
                                   ),
                                   padding: const EdgeInsets.all(12),
-                                  child: const Image(image: AssetImage("assets/logo_v2.png")),
+                                  child: const Image(
+                                    image: AssetImage("assets/logo_v2.png"),
+                                  ),
                                 ),
                                 const SizedBox(height: 16),
-                                
+
                                 const Text(
-                                  'Nutrio', 
+                                  'Nutrio',
                                   style: TextStyle(
-                                    fontSize: 32, 
-                                    fontWeight: FontWeight.bold, 
+                                    fontSize: 32,
+                                    fontWeight: FontWeight.bold,
                                     color: Colors.white,
                                     letterSpacing: 1.0,
-                                  )
+                                  ),
                                 ),
                                 const SizedBox(height: 8),
                                 Text(
-                                  'Helping you make the RIGHT choices.', 
+                                  'Helping you make the RIGHT choices.',
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
-                                    fontSize: 14, 
-                                    color: Colors.white.withOpacity(0.9), 
-                                    fontWeight: FontWeight.w500
-                                  )
+                                    fontSize: 14,
+                                    color: Colors.white.withOpacity(0.9),
+                                    fontWeight: FontWeight.w500,
+                                  ),
                                 ),
                                 const SizedBox(height: 32),
 
@@ -121,24 +140,32 @@ class _SignInPageState extends State<SignInPage> {
                                   label: 'Email Address',
                                   icon: Icons.email_outlined,
                                   keyboardType: TextInputType.emailAddress,
-                                  validator: (val) => (val == null || !val.contains('@')) ? 'Please enter a valid email' : null,
+                                  validator: (val) =>
+                                      (val == null || !val.contains('@'))
+                                      ? 'Please enter a valid email'
+                                      : null,
                                 ),
-                                
+
                                 AuthTextField(
                                   controller: _passwordController,
                                   label: 'Password',
                                   icon: Icons.lock_outline,
                                   isPassword: true,
-                                  validator: (val) => val == null || val.isEmpty ? 'Please enter your password' : null,
+                                  validator: (val) => val == null || val.isEmpty
+                                      ? 'Please enter your password'
+                                      : null,
                                 ),
 
                                 Align(
                                   alignment: Alignment.centerRight,
                                   child: TextButton(
-                                    onPressed: () {}, 
+                                    onPressed: () {},
                                     child: const Text(
-                                      'Forgot Password?', 
-                                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold) 
+                                      'Forgot Password?',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -161,24 +188,31 @@ class _SignInPageState extends State<SignInPage> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
-                            "New to NutriAI? ", 
+                            "New to NutriAI? ",
                             style: TextStyle(
-                              color: Colors.white, 
+                              color: Colors.white,
                               fontSize: 15,
-                              shadows: [Shadow(color: Colors.black45, blurRadius: 5)]
-                            )
+                              shadows: [
+                                Shadow(color: Colors.black45, blurRadius: 5),
+                              ],
+                            ),
                           ),
                           GestureDetector(
                             onTap: widget.onTap,
                             child: Text(
-                              'Sign Up', 
+                              'Sign Up',
                               style: TextStyle(
                                 // UPDATED: Primary Color
-                                color: primaryColor, 
+                                color: primaryColor,
                                 fontWeight: FontWeight.bold,
                                 fontSize: 15,
-                                shadows: [const Shadow(color: Colors.black45, blurRadius: 5)]
-                              )
+                                shadows: [
+                                  const Shadow(
+                                    color: Colors.black45,
+                                    blurRadius: 5,
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ],

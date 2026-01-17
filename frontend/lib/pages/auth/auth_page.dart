@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:frontend/pages/auth/auth_service.dart';
 import 'package:frontend/pages/auth/signin.dart';
 import 'package:frontend/pages/auth/signup.dart';
+import 'package:frontend/pages/survey/survey.dart';
 
 class AuthPage extends StatefulWidget {
    final VoidCallback onAuthenticated;
@@ -22,8 +23,19 @@ class _AuthPageState extends State<AuthPage> {
   }
   Future<void> authoriseUser() async{
     final response = await AuthService().validateToken();
-    if (response.success) {
-      widget.onAuthenticated();
+if (response.success && response.user != null) {
+      // Check if survey is completed using the getter we added to User model
+      if (response.user!.isSurveyCompleted) {
+        widget.onAuthenticated(); // Go to Dashboard
+      } else {
+        // Survey incomplete: Navigate to Survey Step 1
+        if (mounted) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const Survey()),
+          );
+        }
+      }
     }
   }
 

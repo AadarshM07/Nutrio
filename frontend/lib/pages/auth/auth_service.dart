@@ -192,7 +192,11 @@ class AuthService {
       );
 
       if (response.statusCode == 200) {
-        // Optional: Update local user data if needed
+        final data = json.decode(response.body);
+        final updatedUser = User.fromJson(data);
+        _currentUser = updatedUser;
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('user_data', json.encode(updatedUser.toJson()));
         return true;
       } else {
         print("Survey submit failed: ${response.body}");

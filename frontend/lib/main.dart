@@ -18,9 +18,9 @@ class MainApp extends StatefulWidget {
 }
 
 class _MainAppState extends State<MainApp> {
-  bool onboarding = false;
   bool isAuthenticated = false;
   bool isLoading = true; 
+  bool isSurveyCompleted = false;
 
   @override
   void initState() {
@@ -31,38 +31,33 @@ class _MainAppState extends State<MainApp> {
   Future<void> _initializeApp() async {
     // 1. Load Onboarding Status
     final prefs = await SharedPreferences.getInstance();
-    bool onboarded = prefs.getBool("onboarded") ?? false;
 
     // 2. Initialize Auth (Load Token from Disk)
     await AuthService().initialize();
 
     // 3. Validate Token with Backend
     bool loggedIn = false;
+    bool surveyDone = false;
     final response = await AuthService().validateToken();
     if (response.success) {
       loggedIn = true;
+      surveyDone = response.user!.isSurveyCompleted;
     }
 
     if (mounted) {
       setState(() {
-        onboarding = onboarded;
         isAuthenticated = loggedIn;
+        isSurveyCompleted = surveyDone;
         isLoading = false; // App is ready to render
       });
     }
   }
 
-  Future<void> _completeOnboarding() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool("onboarded", true);
-    setState(() {
-      onboarding = true;
-    });
-  }
-
   void _onAuthenticated() {
+    final user = AuthService().currentUser;
     setState(() {
       isAuthenticated = true;
+      isSurveyCompleted = user?.isSurveyCompleted ?? false;
     });
   }
 
@@ -79,8 +74,8 @@ class _MainAppState extends State<MainApp> {
       debugShowCheckedModeBanner: false,
       home: !isAuthenticated
           ? AuthPage(onAuthenticated: _onAuthenticated)
-          : !onboarding
-              ? const Survey()//onComplete: _completeOnboarding
+          : !isSurveyCompleted
+              ? const Survey() 
               : const Dashboard(),
     );
   }
