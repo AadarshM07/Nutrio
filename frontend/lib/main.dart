@@ -78,10 +78,10 @@ class _MainAppState extends State<MainApp> {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: !isAuthenticated
-          ? onboarding
-              ? Survey()//onComplete: _completeOnboarding
-              : AuthPage(onAuthenticated: _onAuthenticated)
-          : const Dashboard(),
+          ? AuthPage(onAuthenticated: _onAuthenticated)
+          : !onboarding
+              ? const Survey()//onComplete: _completeOnboarding
+              : const Dashboard(),
     );
   }
 }
