@@ -22,7 +22,9 @@ async def get_product_details(request: DetailsRequest,db: AsyncSession = Depends
         if request.barcode:
             url = f"https://world.openfoodfacts.net/api/v2/product/{request.barcode}"
             params = {
-                "fields": "product_name,nutrition_grades,nutriments,image_url,code"
+                "fields": "product_name,nutrition_grades,nutriments,image_url,code,"
+        "nutrient_levels,serving_size,ingredients_text,nova_group,"
+        "ingredients_analysis_tags,categories_tags,categories"
             }
             try:
                 response = await client.get(url, params=params)
