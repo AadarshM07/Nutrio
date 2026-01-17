@@ -61,7 +61,7 @@ class PrimaryButton extends StatelessWidget {
   final VoidCallback? onPressed;
   final String text;
   final bool isLoading;
-
+   final Color primaryColor = const Color(0xFF29A38F);
   const PrimaryButton({
     super.key,
     required this.onPressed,
@@ -77,7 +77,7 @@ class PrimaryButton extends StatelessWidget {
       child: ElevatedButton(
         onPressed: isLoading ? null : onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.green,
+          backgroundColor: primaryColor,
           foregroundColor: Colors.white,
           elevation: 0,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),

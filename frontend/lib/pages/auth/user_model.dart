@@ -1,27 +1,32 @@
 class User {
   final int id;
-  final String username; // Holds 'username' for users OR 'org_name' for organizations
+  final String name;
   final String email;
-  final String userType; // 'user' or 'organization'
-  final int? credits;    // Only for users
+  final String? gender;
+  final String? healthIssues;
+  final String? dietaryPreferences;
+  final String? goals;
 
   User({
     required this.id,
-    required this.username,
+    required this.name,
     required this.email,
-    required this.userType,
-    this.credits,
+    this.gender,
+    this.healthIssues,
+    this.dietaryPreferences,
+    this.goals,
   });
 
-  // Factory to create User from JSON (Backend response OR Local Storage)
-  factory User.fromJson(Map<String, dynamic> json, String type) {
+  // Factory to create User from Backend JSON
+  factory User.fromJson(Map<String, dynamic> json) {
     return User(
       id: json['id'] ?? 0,
-      // Logic: Try 'username', if null try 'org_name', if both null use empty string
-      username: json['username'] ?? json['org_name'] ?? '', 
+      name: json['name'] ?? '',
       email: json['email'] ?? '',
-      userType: type,
-      credits: json['credits'],
+      gender: json['gender'],
+      healthIssues: json['health_issues'],
+      dietaryPreferences: json['dietary_preferences'],
+      goals: json['goals'],
     );
   }
 
@@ -29,13 +34,12 @@ class User {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'username': username,
+      'name': name,
       'email': email,
-      'user_type': userType, // Important to save this to know the type later
-      'credits': credits,
-      // We specifically add 'org_name' if it's an organization 
-      // so checks like data.containsKey('org_name') still work on the saved data
-      if (userType == 'organization') 'org_name': username,
+      'gender': gender,
+      'health_issues': healthIssues,
+      'dietary_preferences': dietaryPreferences,
+      'goals': goals,
     };
   }
 }
