@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key});
@@ -7,235 +9,495 @@ class SearchPage extends StatefulWidget {
   State<SearchPage> createState() => _SearchPageState();
 }
 
-class _SearchPageState extends State<SearchPage> {
+class _SearchPageState extends State<SearchPage> with WidgetsBindingObserver {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
+  late MobileScannerController _cameraController;
+  bool _hasPermission = false;
+  bool _isScanning = true;
+  String? _lastScannedCode;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _requestCameraPermission();
+  }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _searchController.dispose();
+    _cameraController.dispose();
     super.dispose();
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: Colors.white,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Search',
-              style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-              ),
-            ),
-            const SizedBox(height: 16),
-            _buildSearchBar(),
-            const SizedBox(height: 24),
-            Expanded(
-              child: _searchQuery.isEmpty
-                  ? _buildSearchSuggestions()
-                  : _buildSearchResults(),
-            ),
-          ],
-        ),
-      ),
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _cameraController.start();
+    } else if (state == AppLifecycleState.paused) {
+      _cameraController.stop();
+    }
+  }
+
+  Future<void> _requestCameraPermission() async {
+    final status = await Permission.camera.request();
+    if (status.isGranted) {
+      setState(() {
+        _hasPermission = true;
+      });
+      _initializeCamera();
+    }
+  }
+
+  void _initializeCamera() {
+    _cameraController = MobileScannerController(
+      autoStart: true,
+      torchEnabled: false,
     );
   }
 
-  Widget _buildSearchBar() {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.grey[100],
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: TextField(
-        controller: _searchController,
-        onChanged: (value) {
-          setState(() {
-            _searchQuery = value;
-          });
-        },
-        decoration: InputDecoration(
-          hintText: 'Search foods, recipes, meals...',
-          prefixIcon: const Icon(Icons.search, color: Colors.grey),
-          suffixIcon: _searchQuery.isNotEmpty
-              ? IconButton(
-                  icon: const Icon(Icons.clear, color: Colors.grey),
-                  onPressed: () {
-                    _searchController.clear();
-                    setState(() {
-                      _searchQuery = '';
-                    });
-                  },
-                )
-              : null,
-          border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 14,
-          ),
-        ),
-      ),
-    );
-  }
+  void _onBarcodeDetect(BarcodeCapture capture) {
+    if (!_isScanning) return;
 
-  Widget _buildSearchSuggestions() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Popular Searches',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 12),
-        _buildSuggestionChip('Chicken breast'),
-        const SizedBox(height: 8),
-        _buildSuggestionChip('Protein shake'),
-        const SizedBox(height: 8),
-        _buildSuggestionChip('Salad'),
-        const SizedBox(height: 8),
-        _buildSuggestionChip('Quinoa'),
-        const SizedBox(height: 24),
-        const Text(
-          'Categories',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 12),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: [
-            _buildCategoryChip('Breakfast', Icons.breakfast_dining),
-            _buildCategoryChip('Lunch', Icons.lunch_dining),
-            _buildCategoryChip('Dinner', Icons.dinner_dining),
-            _buildCategoryChip('Snacks', Icons.emoji_food_beverage),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSuggestionChip(String text) {
-    return InkWell(
-      onTap: () {
-        _searchController.text = text;
+    final List<Barcode> barcodes = capture.barcodes;
+    if (barcodes.isNotEmpty) {
+      final barcode = barcodes.first;
+      if (barcode.rawValue != null && barcode.rawValue != _lastScannedCode) {
         setState(() {
-          _searchQuery = text;
+          _lastScannedCode = barcode.rawValue;
+          _searchController.text = barcode.rawValue!;
+          _searchQuery = barcode.rawValue!;
+          _isScanning = false;
         });
-      },
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.grey[300]!),
-        ),
-        child: Row(
-          children: [
-            const Icon(Icons.history, size: 20, color: Colors.grey),
-            const SizedBox(width: 12),
-            Text(
-              text,
-              style: const TextStyle(fontSize: 14),
-            ),
-          ],
-        ),
+
+        // Resume scanning after 2 seconds
+        Future.delayed(const Duration(seconds: 2), () {
+          if (mounted) {
+            setState(() {
+              _isScanning = true;
+            });
+          }
+        });
+
+        // You can add logic here to fetch product info based on barcode
+        _showScannedResult(barcode.rawValue!);
+      }
+    }
+  }
+
+  void _showScannedResult(String barcode) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Scanned: $barcode'),
+        duration: const Duration(seconds: 2),
+        backgroundColor: const Color(0xFF2C5F2D),
       ),
     );
   }
 
-  Widget _buildCategoryChip(String label, IconData icon) {
-    return Chip(
-      avatar: Icon(icon, size: 18, color: Colors.green),
-      label: Text(label),
-      backgroundColor: Colors.green[50],
-      side: BorderSide.none,
-    );
-  }
-
-  Widget _buildSearchResults() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Results for "$_searchQuery"',
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        top: false,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(10, 4, 10, 10),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // Embedded Camera Scanner
+              Container(
+                height: 200,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: Colors.black,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: const Color(0xFF2C5F2D), width: 3),
+                ),
+                clipBehavior: Clip.hardEdge,
+                child: _hasPermission
+                    ? Stack(
+                        children: [
+                          MobileScanner(
+                            controller: _cameraController,
+                            onDetect: _onBarcodeDetect,
+                          ),
+                          // Scanning indicator overlay
+                          if (_isScanning)
+                            Center(
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 8,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withOpacity(0.6),
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: const [
+                                    Icon(
+                                      Icons.qr_code_scanner,
+                                      color: Colors.white,
+                                      size: 20,
+                                    ),
+                                    SizedBox(width: 8),
+                                    Text(
+                                      'Scanning...',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          // Corner accents
+                          Positioned(
+                            top: 16,
+                            left: 16,
+                            child: Container(
+                              width: 30,
+                              height: 30,
+                              decoration: const BoxDecoration(
+                                border: Border(
+                                  top: BorderSide(
+                                    color: Color(0xFF4CAF50),
+                                    width: 4,
+                                  ),
+                                  left: BorderSide(
+                                    color: Color(0xFF4CAF50),
+                                    width: 4,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          Positioned(
+                            top: 16,
+                            right: 16,
+                            child: Container(
+                              width: 30,
+                              height: 30,
+                              decoration: const BoxDecoration(
+                                border: Border(
+                                  top: BorderSide(
+                                    color: Color(0xFF4CAF50),
+                                    width: 4,
+                                  ),
+                                  right: BorderSide(
+                                    color: Color(0xFF4CAF50),
+                                    width: 4,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          Positioned(
+                            bottom: 16,
+                            left: 16,
+                            child: Container(
+                              width: 30,
+                              height: 30,
+                              decoration: const BoxDecoration(
+                                border: Border(
+                                  bottom: BorderSide(
+                                    color: Color(0xFF4CAF50),
+                                    width: 4,
+                                  ),
+                                  left: BorderSide(
+                                    color: Color(0xFF4CAF50),
+                                    width: 4,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          Positioned(
+                            bottom: 16,
+                            right: 16,
+                            child: Container(
+                              width: 30,
+                              height: 30,
+                              decoration: const BoxDecoration(
+                                border: Border(
+                                  bottom: BorderSide(
+                                    color: Color(0xFF4CAF50),
+                                    width: 4,
+                                  ),
+                                  right: BorderSide(
+                                    color: Color(0xFF4CAF50),
+                                    width: 4,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      )
+                    : Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(
+                              Icons.camera_alt_outlined,
+                              color: Colors.white54,
+                              size: 50,
+                            ),
+                            const SizedBox(height: 12),
+                            const Text(
+                              'Camera Permission Required',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            ElevatedButton(
+                              onPressed: _requestCameraPermission,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF2C5F2D),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 20,
+                                  vertical: 8,
+                                ),
+                              ),
+                              child: const Text(
+                                'Grant Permission',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+              ),
+              const SizedBox(height: 24),
+              // Search Section Box
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.08),
+                      blurRadius: 15,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                  border: Border.all(color: Colors.grey[200]!, width: 1),
+                ),
+                child: Column(
+                  children: [
+                    // Scan or search text
+                    RichText(
+                      textAlign: TextAlign.center,
+                      text: const TextSpan(
+                        style: TextStyle(
+                          fontSize: 28,
+                          color: Colors.black87,
+                          height: 1.3,
+                        ),
+                        children: [
+                          TextSpan(
+                            text: 'Scan ',
+                            style: TextStyle(fontWeight: FontWeight.w600),
+                          ),
+                          TextSpan(
+                            text: 'a barcode or\n',
+                            style: TextStyle(fontWeight: FontWeight.w300),
+                          ),
+                          TextSpan(
+                            text: 'search ',
+                            style: TextStyle(fontWeight: FontWeight.w600),
+                          ),
+                          TextSpan(
+                            text: 'for a product',
+                            style: TextStyle(fontWeight: FontWeight.w300),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    // Search bar with camera icon
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.grey[300],
+                        borderRadius: BorderRadius.circular(30),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.05),
+                            blurRadius: 10,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          const SizedBox(width: 16),
+                          // Search field
+                          Expanded(
+                            child: TextField(
+                              controller: _searchController,
+                              onChanged: (value) {
+                                setState(() {
+                                  _searchQuery = value;
+                                });
+                              },
+                              decoration: InputDecoration(
+                                hintText: 'Search for a product',
+                                hintStyle: TextStyle(
+                                  color: Colors.grey[400],
+                                  fontSize: 16,
+                                  fontStyle: FontStyle.italic,
+                                ),
+                                border: InputBorder.none,
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 14,
+                                ),
+                              ),
+                            ),
+                          ),
+                          // Search button
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: InkWell(
+                              onTap: () {
+                                if (_searchQuery.isNotEmpty) {
+                                  // Perform search
+                                }
+                              },
+                              borderRadius: BorderRadius.circular(30),
+                              child: Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: const BoxDecoration(
+                                  color: Color(0xFF2C5F2D),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  Icons.search,
+                                  color: Colors.white,
+                                  size: 24,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 30),
+              // Support section
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFF9800),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: const [
+                        Icon(Icons.info_outline, color: Colors.white, size: 24),
+                        SizedBox(width: 12),
+                        Text(
+                          'Our application needs you!',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(
+                            Icons.favorite,
+                            color: Colors.white,
+                            size: 40,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: RichText(
+                            text: const TextSpan(
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                height: 1.4,
+                              ),
+                              children: [
+                                TextSpan(text: 'Help us inform '),
+                                TextSpan(
+                                  text: 'millions of\nconsumers',
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                                TextSpan(text: ' on what they eat!'),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                    ElevatedButton(
+                      onPressed: () {
+                        // Handle support action
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white.withOpacity(0.3),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 32,
+                          vertical: 14,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: const [
+                          Text(
+                            'Support',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          SizedBox(width: 8),
+                          Icon(Icons.arrow_forward, size: 20),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
-        const SizedBox(height: 12),
-        Expanded(
-          child: ListView.builder(
-            itemCount: 5,
-            itemBuilder: (context, index) {
-              return _buildResultCard(
-                'Food Item ${index + 1}',
-                '${(index + 1) * 50} cal',
-                Icons.restaurant,
-              );
-            },
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildResultCard(String title, String calories, IconData icon) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey[300]!),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: Colors.green[100],
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(icon, color: Colors.green, size: 24),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                Text(
-                  calories,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey[600],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Icon(Icons.add_circle_outline, color: Colors.green),
-        ],
       ),
     );
   }

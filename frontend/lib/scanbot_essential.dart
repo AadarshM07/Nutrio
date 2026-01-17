@@ -1,0 +1,18 @@
+const String scanbotLicenseKey = '''
+WFfGlHdatqG2BOsz2WDZWRAius/QZS
+cLtSwzt01G7Zbij5mWb3Jciwffv1q7
+gF6B3k4xMRvvjTrtkSABKC3DRQYa04
+9q0fa+gLYFdwn0x6i233f0vAcflCxQ
+AaoqMZaPCiiPS0tpUI0d9Iv4FTEPhK
+pCTPSkWSwWqiRcXiyE6m3JDQqv6ED7
+Croxeo9LVQSu8IeF/SRSVRDTUdB0u2
+Bcm1lR1oQWVdNGcVqWX+UZyZyZuo0v
+SNziMZQmSV65gIrrdi9XYqlqw7avOg
+05ZN5SAT3WwqZHsRE86u8DsmaYJd17
+OItSUF6VsT0Yidbax0mKy/2Vp74JOR
+4KTGxTT/yB4A==
+
+U2NhbmJvdFNESw
+poZWhlQGdtYWlsLmNvbQoxNzY5Mjk5
+MTk5CjgzODg2MDcKMTk=
+''';

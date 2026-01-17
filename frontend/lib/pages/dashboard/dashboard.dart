@@ -109,7 +109,7 @@ void _openChat() {
     child: BackdropFilter(
       filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
       child: Container(
-        padding: const EdgeInsets.only(top: 8, bottom: 8),
+        padding: const EdgeInsets.only(top: 6, bottom: 6),
         decoration: BoxDecoration(
           color: Colors.white.withOpacity(0.7),
           border: Border(
