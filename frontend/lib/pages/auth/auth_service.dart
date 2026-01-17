@@ -151,6 +151,66 @@ class AuthService {
     }
   }
 
+   Future<bool> submitSurvey({
+    required int? weight,
+    required int? height,
+    required String gender,
+    required String goal,
+    required List<String> dietaryPreferences,
+    required List<String> healthConditions,
+    required String healthDetails,
+  }) async {
+    final token = await _getToken(); // Reuse your existing helper
+    if (token == null) return false;
+
+    try {
+      final url = Uri.parse('$apiURL/auth/submit-survey/');
+      
+      // Convert lists to comma-separated strings for the backend
+      // or send as JSON array depending on how your backend handles it.
+      // Based on your python schema: Optional[str], so we join them.
+      final dietString = dietaryPreferences.join(", ");
+      final healthString = healthConditions.join(", ");
+
+      final body = {
+        'weight': weight,
+        'height': height,
+        'gender': gender,
+        'goals': goal,
+        'dietary_preferences': dietString,
+        'health_issues': healthString,
+        'health_details': healthDetails.isEmpty ? null : healthDetails,
+      };
+
+      final response = await http.post(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: json.encode(body),
+      );
+
+      if (response.statusCode == 200) {
+        // Optional: Update local user data if needed
+        return true;
+      } else {
+        print("Survey submit failed: ${response.body}");
+        return false;
+      }
+    } catch (e) {
+      print("Error submitting survey: $e");
+      return false;
+    }
+  }
+  
+
+
+  Future<String?> _getToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('auth_token');
+  }
+
   // --- LOGOUT ---
   Future<void> logout() async {
     _currentUser = null;
@@ -160,3 +220,4 @@ class AuthService {
     await prefs.remove('user_data');
   }
 }
+

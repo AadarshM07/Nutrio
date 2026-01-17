@@ -1,9 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/pages/auth/auth_service.dart';
+import 'package:frontend/pages/dashboard/dashboard.dart';
+
 
 class Survey3 extends StatefulWidget {
+  // All accumulated data
+  final int height;
+  final int weight;
+  final String gender;
+  final String goal;
+  final List<String> dietaryPreferences;
   final List<String> selectedConditions;
 
-  const Survey3({super.key, required this.selectedConditions});
+  const Survey3({
+    super.key, 
+    required this.height, 
+    required this.weight, 
+    required this.gender,
+    required this.goal,
+    required this.dietaryPreferences,
+    required this.selectedConditions,
+  });
 
   @override
   State<Survey3> createState() => _Survey3State();
@@ -11,8 +28,45 @@ class Survey3 extends StatefulWidget {
 
 class _Survey3State extends State<Survey3> {
   final Color primaryTeal = const Color(0xFF29A38F);
-  
   final Map<String, String> _details = {};
+  bool _isLoading = false;
+
+  Future<void> _submitAll() async {
+    setState(() => _isLoading = true);
+
+    // Combine all detail text fields into one string for the backend 
+    // (since backend expects Optional[str] for health_details)
+    String combinedDetails = "";
+    _details.forEach((condition, detail) {
+      if (detail.isNotEmpty) {
+        combinedDetails += "$condition: $detail; ";
+      }
+    });
+
+    final success = await AuthService().submitSurvey(
+      height: widget.height,
+      weight: widget.weight,
+      gender: widget.gender,
+      goal: widget.goal,
+      dietaryPreferences: widget.dietaryPreferences,
+      healthConditions: widget.selectedConditions,
+      healthDetails: combinedDetails,
+    );
+
+    setState(() => _isLoading = false);
+
+    if (success && mounted) {
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => const Dashboard()),
+        (route) => false,
+      );
+    } else if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Submission failed. Please try again.")),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +95,6 @@ class _Survey3State extends State<Survey3> {
             const Text("This helps our AI fine-tune your meal plans for your specific health needs.", style: TextStyle(color: Colors.grey)),
             const SizedBox(height: 32),
 
-            // Dynamically build a list for each condition selected
             ...widget.selectedConditions.map((condition) => _buildDetailInput(condition)).toList(),
 
             const SizedBox(height: 48),
@@ -50,14 +103,14 @@ class _Survey3State extends State<Survey3> {
               width: double.infinity,
               height: 56,
               child: ElevatedButton(
-                onPressed: () {
-                  // Final submission logic
-                },
+                onPressed: _isLoading ? null : _submitAll,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: primaryTeal,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
                 ),
-                child: const Text("Complete Profile", style: TextStyle(fontSize: 18, color: Colors.white)),
+                child: _isLoading 
+                  ? const CircularProgressIndicator(color: Colors.white)
+                  : const Text("Complete Profile", style: TextStyle(fontSize: 18, color: Colors.white)),
               ),
             ),
           ],
@@ -89,7 +142,7 @@ class _Survey3State extends State<Survey3> {
           TextField(
             onChanged: (value) => _details[condition] = value,
             decoration: InputDecoration(
-              hintText: "E.g., Years since diagnosis, current medication, or specific triggers.",
+              hintText: "E.g., Years since diagnosis, current medication...",
               hintStyle: const TextStyle(fontSize: 14, color: Colors.grey),
               border: InputBorder.none,
               filled: true,

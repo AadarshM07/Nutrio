@@ -1,13 +1,6 @@
 import 'package:flutter/material.dart';
 import 'survey2.dart';
 
-void main() {
-  runApp(const MaterialApp(
-    debugShowCheckedModeBanner: false,
-    home: Survey(),
-  ));
-}
-
 class Survey extends StatefulWidget {
   const Survey({super.key});
 
@@ -32,24 +25,14 @@ class _SurveyState extends State<Survey> {
       final bmi = weight / (heightInMeters * heightInMeters);
 
       String category;
-      if (bmi < 18.5) {
-        category = "Underweight";
-      } else if (bmi < 24.9) {
-        category = "Normal weight";
-      } else if (bmi < 29.9) {
-        category = "Overweight";
-      } else {
-        category = "Obesity";
-      }
+      if (bmi < 18.5) {category = "Underweight";}
+      else if (bmi < 24.9) {category = "Normal weight";}
+      else if (bmi < 29.9) {category = "Overweight";}
+      else {category = "Obesity";}
 
       setState(() {
         _bmi = bmi;
         _category = category;
-      });
-    } else {
-      setState(() {
-        _bmi = null;
-        _category = "Invalid input";
       });
     }
   }
@@ -63,6 +46,7 @@ class _SurveyState extends State<Survey> {
         centerTitle: true,
         backgroundColor: Colors.white,
         elevation: 0,
+        automaticallyImplyLeading: false, // Don't allow going back to signup easily
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
@@ -93,7 +77,7 @@ class _SurveyState extends State<Survey> {
               children: [
                 _genderChip("Male"),
                 _genderChip("Female"),
-                _genderChip("Prefer not to say"),
+                _genderChip("Other"),
               ],
             ),
             
@@ -112,7 +96,7 @@ class _SurveyState extends State<Survey> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        "Your BMI is ${_bmi!.toStringAsFixed(1)} ($_category). This will be used to adjust your recommendations.",
+                        "Your BMI is ${_bmi!.toStringAsFixed(1)} ($_category).",
                         style: const TextStyle(color: Colors.black87),
                       ),
                     ),
@@ -128,19 +112,27 @@ class _SurveyState extends State<Survey> {
               child: ElevatedButton(
                 onPressed: () {
                   _calculateBMI(); 
-                  if (_bmi != null && _selectedGender.isNotEmpty) {
-                  Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                  builder: (context) => const Survey2(), 
-                  ),
-                );
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Please fill in all details and select a gender")),
-                );
-                }
-              },
+                  if (_heightController.text.isNotEmpty && 
+                      _weightController.text.isNotEmpty && 
+                      _selectedGender.isNotEmpty) {
+                    
+                    // PASS DATA TO NEXT PAGE
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => Survey2(
+                          height: int.parse(_heightController.text),
+                          weight: int.parse(_weightController.text),
+                          gender: _selectedGender,
+                        ), 
+                      ),
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Please fill in all details")),
+                    );
+                  }
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF29A38F),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
@@ -154,7 +146,6 @@ class _SurveyState extends State<Survey> {
     );
   }
 
-  // Helper widget for Gender Selection
   Widget _genderChip(String label) {
     bool isSelected = _selectedGender == label;
     return ChoiceChip(
@@ -167,16 +158,10 @@ class _SurveyState extends State<Survey> {
       },
       selectedColor: const Color(0xFF29A38F).withOpacity(0.2),
       checkmarkColor: const Color(0xFF29A38F),
-      labelStyle: TextStyle(
-        color: isSelected ? const Color(0xFF29A38F) : Colors.black54,
-        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-      ),
       backgroundColor: Colors.grey[50],
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
-        side: BorderSide(
-          color: isSelected ? const Color(0xFF29A38F) : Colors.grey[200]!,
-        ),
+        side: BorderSide(color: isSelected ? const Color(0xFF29A38F) : Colors.grey[200]!),
       ),
     );
   }

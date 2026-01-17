@@ -11,7 +11,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.models import User
 from app.database import get_session
-from app.schemas.auth import RegisterRequest, LoginRequest, UserResponse, Token
+from app.schemas.auth import RegisterRequest, LoginRequest, UserResponse, Token, SurveyRequest
 
 router = APIRouter()
 
@@ -107,6 +107,41 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession
     if user is None:
         raise credentials_exception
     return user
+
+
+@router.post("/submit-survey/", response_model=UserResponse)
+async def submit_survey(
+    survey_data: SurveyRequest,
+    current_user: User = Depends(get_current_user), # Handles Auth
+    db: AsyncSession = Depends(get_session)
+):
+    """
+    Updates the current authenticated user's profile with survey data.
+    Only updates fields that are actually provided (not None).
+    """
+    
+    # Update fields if they are provided in the request
+    if survey_data.weight is not None:
+        current_user.weight = survey_data.weight
+    if survey_data.height is not None:
+        current_user.height = survey_data.height
+    if survey_data.gender is not None:
+        current_user.gender = survey_data.gender
+    if survey_data.health_issues is not None:
+        current_user.health_issues = survey_data.health_issues
+    if survey_data.dietary_preferences is not None:
+        current_user.dietary_preferences = survey_data.dietary_preferences
+    if survey_data.goals is not None:
+        current_user.goals = survey_data.goals
+    if survey_data.health_details is not None:
+        current_user.health_details = survey_data.health_details
+
+    db.add(current_user)
+    await db.commit()
+    await db.refresh(current_user)
+    
+    return current_user
+
 
 @router.get("/me/", response_model=UserResponse)
 async def read_users_me(current_user: User = Depends(get_current_user)):

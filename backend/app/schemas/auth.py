@@ -22,6 +22,15 @@ class UserResponse(BaseModel):
     dietary_preferences: Optional[str] = None
     goals: Optional[str] = None
 
+class SurveyRequest(BaseModel):
+    weight: Optional[int] = None
+    height: Optional[int] = None
+    gender: Optional[str] = None 
+    health_issues: Optional[str] = None
+    dietary_preferences: Optional[str] = None
+    goals: Optional[str] = None
+    health_details: Optional[str] = None
+
 class Token(BaseModel):
     access_token: str
     token_type: str

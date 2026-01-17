@@ -1,31 +1,65 @@
 import 'package:flutter/material.dart';
-import 'survey3.dart'; 
-
-void main() {
-  runApp(const MaterialApp(
-    debugShowCheckedModeBanner: false,
-    home: Survey2(),
-  ));
-}
+import 'package:frontend/pages/auth/auth_service.dart';
+import 'package:frontend/pages/dashboard/dashboard.dart';
+import 'survey3.dart';
 
 class Survey2 extends StatefulWidget {
-  const Survey2({super.key});
+  // Received from previous step
+  final int height;
+  final int weight;
+  final String gender;
+
+  const Survey2({
+    super.key, 
+    required this.height, 
+    required this.weight, 
+    required this.gender
+  });
 
   @override
   State<Survey2> createState() => _Survey2State();
 }
 
 class _Survey2State extends State<Survey2> {
-  // Selection States
   String _selectedGoal = "Weight Loss"; 
   List<String> _selectedDiets = [];
   List<String> _selectedConditions = [];
+  bool _isLoading = false;
 
   final Color primaryTeal = const Color(0xFF29A38F);
 
+  Future<void> _handleFinish() async {
+    setState(() => _isLoading = true);
+    
+    // Submit Data immediately if no complex conditions
+    final success = await AuthService().submitSurvey(
+      height: widget.height,
+      weight: widget.weight,
+      gender: widget.gender,
+      goal: _selectedGoal,
+      dietaryPreferences: _selectedDiets,
+      healthConditions: ["None"], // Explicitly none
+      healthDetails: "",
+    );
+
+    setState(() => _isLoading = false);
+
+    if (success && mounted) {
+      // Navigate to Dashboard and remove all previous routes
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => const Dashboard()),
+        (route) => false,
+      );
+    } else if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Submission failed. Please try again.")),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    // Logic to determine if we move to Survey3 or Finish
     bool needsDetails = _selectedConditions.isNotEmpty && 
                         !_selectedConditions.contains("None");
 
@@ -54,14 +88,11 @@ class _Survey2State extends State<Survey2> {
             const Text("Personalize your experience to match your busy schedule and health needs.", style: TextStyle(color: Colors.black54)),
             const SizedBox(height: 32),
 
-            // 1. Goals Section
             _buildSectionTitle("What is your primary goal?"),
             const SizedBox(height: 12),
             _buildGoalSelector(),
 
             const SizedBox(height: 32),
-
-            // 2. Dietary Preferences Section
             _buildSectionTitle("Dietary Preferences"),
             const SizedBox(height: 12),
             Wrap(
@@ -76,8 +107,6 @@ class _Survey2State extends State<Survey2> {
             ),
 
             const SizedBox(height: 32),
-
-            // 3. Health Conditions Section
             _buildSectionTitle("Health Conditions (Optional)"),
             const SizedBox(height: 12),
             Wrap(
@@ -96,26 +125,36 @@ class _Survey2State extends State<Survey2> {
               width: double.infinity,
               height: 56,
               child: ElevatedButton(
-                onPressed: () {
+                onPressed: _isLoading ? null : () {
                   if (needsDetails) {
+                    // Pass ALL accumulated data to Step 4
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => Survey3(selectedConditions: _selectedConditions),
+                        builder: (context) => Survey3(
+                          height: widget.height,
+                          weight: widget.weight,
+                          gender: widget.gender,
+                          goal: _selectedGoal,
+                          dietaryPreferences: _selectedDiets,
+                          selectedConditions: _selectedConditions,
+                        ),
                       ),
                     );
                   } else {
-                    print("Survey Finished. Selected Conditions: $_selectedConditions");
+                    _handleFinish();
                   }
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: primaryTeal,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
                 ),
-                child: Text(
-                  needsDetails ? "Continue →" : "Finish survey →",
-                  style: const TextStyle(fontSize: 18, color: Colors.white),
-                ),
+                child: _isLoading 
+                  ? const CircularProgressIndicator(color: Colors.white)
+                  : Text(
+                      needsDetails ? "Continue →" : "Finish survey →",
+                      style: const TextStyle(fontSize: 18, color: Colors.white),
+                    ),
               ),
             ),
           ],
@@ -124,6 +163,7 @@ class _Survey2State extends State<Survey2> {
     );
   }
 
+  // ... (Helper widgets _buildSectionTitle, _buildHealthChip, etc. remain the same)
   Widget _buildSectionTitle(String title) {
     return Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold));
   }
