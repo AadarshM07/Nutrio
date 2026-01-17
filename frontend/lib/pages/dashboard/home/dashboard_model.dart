@@ -15,7 +15,6 @@ class GraphDataPoint {
     return GraphDataPoint(
       label: json['label'],
       value: (json['value'] as num).toDouble(),
-      // Parse Hex string (#RRGGBB) to Color object
       color: _hexToColor(json['color']),
     );
   }

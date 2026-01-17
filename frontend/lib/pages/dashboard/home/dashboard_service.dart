@@ -1,8 +1,8 @@
 import 'dart:convert';
-import 'package:frontend/pages/dashboard/home/dashboard_model.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../constants/constants.dart'; // Ensure your apiURL is here
+import '../../constants/constants.dart'; 
+import 'dashboard_model.dart';
 
 class DashboardService {
   Future<DashboardData?> fetchDashboardStats() async {

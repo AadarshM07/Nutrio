@@ -4,6 +4,7 @@ import 'dart:ui';
 import 'home/home.dart';
 import 'search/search.dart';
 import 'profile/profile.dart';
+import 'inventory/inventory_page.dart'; // Import the new page
 
 class Dashboard extends StatefulWidget {
   const Dashboard({super.key});
@@ -15,6 +16,7 @@ class Dashboard extends StatefulWidget {
 class _DashboardState extends State<Dashboard> {
   int _selectedIndex = 0;
   bool _isChatOpen = false;
+
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
@@ -22,7 +24,7 @@ class _DashboardState extends State<Dashboard> {
     });
   }
 
-void _openChat() {
+  void _openChat() {
     setState(() {
       _isChatOpen = true;
     });
@@ -34,6 +36,7 @@ void _openChat() {
     });
   }
 
+  // ... (Keep _buildTopBar exactly as is) ...
   Widget _buildTopBar() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -86,9 +89,7 @@ void _openChat() {
               children: [
                 IconButton(
                   icon: const Icon(Icons.notifications_outlined, size: 26),
-                  onPressed: () {
-                     
-                  },
+                  onPressed: () {},
                 ),
                 const SizedBox(width: 8),
                 CircleAvatar(
@@ -104,94 +105,98 @@ void _openChat() {
     );
   }
 
- Widget _buildBottomNavigation() {
-  return ClipRect(
-    child: BackdropFilter(
-      filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-      child: Container(
-        padding: const EdgeInsets.only(top: 6, bottom: 6),
-        decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.7),
-          border: Border(
-            top: BorderSide(
-              color: Colors.grey.shade300, 
-              width: 1.0,                  
+  Widget _buildBottomNavigation() {
+    return ClipRect(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: Container(
+          padding: const EdgeInsets.only(top: 6, bottom: 6),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.7),
+            border: Border(
+              top: BorderSide(
+                color: Colors.grey.shade300,
+                width: 1.0,
+              ),
+            ),
+          ),
+          child: Theme(
+            data: Theme.of(context).copyWith(
+              splashColor: Colors.transparent,
+              highlightColor: Colors.transparent,
+            ),
+            child: BottomNavigationBar(
+              currentIndex: _selectedIndex,
+              onTap: _onItemTapped,
+              type: BottomNavigationBarType.fixed,
+              backgroundColor: Colors.transparent,
+              selectedItemColor: Colors.green,
+              unselectedItemColor: Colors.grey[600],
+              elevation: 0,
+              enableFeedback: false,
+              showSelectedLabels: true,
+              showUnselectedLabels: true,
+              items: const [
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.home_outlined),
+                  activeIcon: Icon(Icons.home),
+                  label: 'Home',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.search_outlined),
+                  activeIcon: Icon(Icons.search),
+                  label: 'Search',
+                ),
+                // NEW INVENTORY ITEM
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.inventory_2_outlined),
+                  activeIcon: Icon(Icons.inventory_2),
+                  label: 'Pantry', 
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.person_outline),
+                  activeIcon: Icon(Icons.person),
+                  label: 'Profile',
+                ),
+              ],
             ),
           ),
         ),
-        child: Theme(
-          data: Theme.of(context).copyWith(
-            splashColor: Colors.transparent,
-            highlightColor: Colors.transparent,
-          ),
-          child: BottomNavigationBar(
-            currentIndex: _selectedIndex,
-            onTap: _onItemTapped,
-            type: BottomNavigationBarType.fixed,
-            backgroundColor: Colors.transparent,
-            selectedItemColor: Colors.green,
-            unselectedItemColor: Colors.grey[600],
-            elevation: 0,
-            enableFeedback: false,
-            showSelectedLabels: true,
-            showUnselectedLabels: true,
-            items: const [
-              BottomNavigationBarItem(
-                icon: Icon(Icons.home_outlined),
-                activeIcon: Icon(Icons.home),
-                label: 'Home',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.search_outlined),
-                activeIcon: Icon(Icons.search),
-                label: 'Search',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.person_outline),
-                activeIcon: Icon(Icons.person),
-                label: 'Profile',
-              ),
-            ],
-          ),
-        ),
       ),
-    ),
-  );
-}
+    );
+  }
 
   Widget _getBodyContent() {
     switch (_selectedIndex) {
       case 0:
-        return const HomePage();
+        return HomePage(onChatTapped: _openChat);
       case 1:
         return const SearchPage();
       case 2:
+        return const InventoryPage(); // The new page
+      case 3:
         return const ProfilePage();
       default:
-        return const HomePage();
+        return HomePage(onChatTapped: _openChat);
     }
   }
 
   @override
-Widget build(BuildContext context) {
-  return Scaffold(
-    extendBody: true,  
-    backgroundColor: Colors.white,
-    body: _isChatOpen 
-          ? SafeArea(child: ChatPage(onBack: _closeChat)) 
+  Widget build(BuildContext context) {
+    return Scaffold(
+      extendBody: true,
+      backgroundColor: Colors.white,
+      body: _isChatOpen
+          ? SafeArea(child: ChatPage(onBack: _closeChat))
           : Column(
               children: [
                 _buildTopBar(),
                 Expanded(
-                  // Pass the callback to HomePage
-                  child: _selectedIndex == 0 
-                      ? HomePage(onChatTapped: _openChat) 
-                      : _getBodyContent(), 
+                  child: _getBodyContent(),
                 ),
               ],
             ),
-    bottomNavigationBar: _buildBottomNavigation(),
-  );
-}
-
+      bottomNavigationBar: _isChatOpen ? null : _buildBottomNavigation(),
+    );
+  }
 }

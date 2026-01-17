@@ -5,6 +5,7 @@ from google import genai
 from google.genai.errors import ServerError
 from app.integrations.rag_utils import get_relevant_passages, get_chroma_db
 from app.integrations.memory import ShortTermMemory
+import json
 
 load_dotenv()
 api_key = os.getenv("GEMINI_API")
@@ -200,7 +201,7 @@ class NutritionAnalyzer:
         inventory_text = "User's Current Pantry Inventory:\n"
         for item in inventory_items:
             # Note: nutrient_scrore is the typo from your model, keeping it consistent
-            inventory_text += f"- {item.title} (Tag: {item.tag}, Grade: {item.nutrient_scrore})\n"
+            inventory_text += f"- {item.title} (Tag: {item.tag}, Grade: {item.nutrient_score})\n"
 
         # 2. Get RAG Context (General dietary guidelines for their condition)
         disease = user_profile.get('disease', 'General Health')

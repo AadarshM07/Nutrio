@@ -1,10 +1,10 @@
 import 'dart:convert';
+import 'package:frontend/pages/constants/constants.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/product_model.dart';
 
 class InventoryService {
-  static const String baseUrl = 'http://172.24.81.153:8000/inv';
 
   static Future<bool> addToInventory(
     ProductDetailsResponse productDetails,
@@ -78,7 +78,7 @@ class InventoryService {
 
       // Make API call
       final response = await http.post(
-        Uri.parse('$baseUrl/add/'),
+        Uri.parse('$apiURL/inv/add/'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
