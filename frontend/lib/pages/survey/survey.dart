@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'survey2.dart';
 
 void main() {
   runApp(const MaterialApp(
@@ -58,7 +59,6 @@ class _SurveyState extends State<Survey> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        leading: const Icon(Icons.arrow_back_ios, color: Colors.black),
         title: const Text("Step 2 of 4", style: TextStyle(color: Colors.black54, fontSize: 16)),
         centerTitle: true,
         backgroundColor: Colors.white,
@@ -86,8 +86,6 @@ class _SurveyState extends State<Survey> {
             ),
             
             const SizedBox(height: 32),
-
-            // Gender Selection Section
             const Text("Gender", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
             const SizedBox(height: 12),
             Wrap(
@@ -128,7 +126,21 @@ class _SurveyState extends State<Survey> {
               width: double.infinity,
               height: 56,
               child: ElevatedButton(
-                onPressed: _calculateBMI,
+                onPressed: () {
+                  _calculateBMI(); 
+                  if (_bmi != null && _selectedGender.isNotEmpty) {
+                  Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                  builder: (context) => const Survey2(), 
+                  ),
+                );
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("Please fill in all details and select a gender")),
+                );
+                }
+              },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF29A38F),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),

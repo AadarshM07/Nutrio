@@ -1,5 +1,12 @@
 import 'package:flutter/material.dart';
 
+void main() {
+  runApp(const MaterialApp(
+    debugShowCheckedModeBanner: false,
+    home: ProfilePage(),
+  ));
+}
+
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
 
