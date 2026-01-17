@@ -1,0 +1,392 @@
+[
+  {
+    "condition": "diabetes",
+    "category": "carbohydrates",
+    "gender": "both",
+    "guideline": "Emphasize nutrient-dense, high-fiber, minimally processed sources of carbohydrate.",
+    "per_serving_limit": 45,
+    "daily_limit": 130,
+    "unit": "g",
+    "source": "NCBI - Medical Nutrition Therapy for Diabetes"
+  },
+  {
+    "condition": "diabetes",
+    "category": "carbohydrates",
+    "gender": "female",
+    "guideline": "Average carbohydrate servings needed per meal for women.",
+    "per_serving_limit": 60,
+    "daily_limit": 180,
+    "unit": "g",
+    "source": "NCBI - Medical Nutrition Therapy for Diabetes"
+  },
+  {
+    "condition": "diabetes",
+    "category": "carbohydrates",
+    "gender": "male",
+    "guideline": "Average carbohydrate servings needed per meal for men.",
+    "per_serving_limit": 75,
+    "daily_limit": 225,
+    "unit": "g",
+    "source": "NCBI - Medical Nutrition Therapy for Diabetes"
+  },
+  {
+    "condition": "diabetes",
+    "category": "fiber",
+    "gender": "both",
+    "guideline": "Consume high fiber foods to improve glycemic control and reduce mortality.",
+    "minimum_per_serving": 5,
+    "recommended_daily": 35,
+    "unit": "g",
+    "source": "NCBI - Medical Nutrition Therapy for Diabetes"
+  },
+  {
+    "condition": "diabetes",
+    "category": "fiber",
+    "gender": "both",
+    "guideline": "Specific fiber intake target relative to caloric intake.",
+    "minimum_per_serving": 3,
+    "recommended_daily": 14,
+    "unit": "g/1000kcal",
+    "source": "NCBI - Medical Nutrition Therapy for Diabetes"
+  },
+  {
+    "condition": "diabetes",
+    "category": "sugar",
+    "gender": "both",
+    "guideline": "Replace sugar-sweetened beverages with water or low-calorie alternatives to manage glycemia.",
+    "per_serving_limit": 0,
+    "daily_limit": 25,
+    "unit": "g",
+    "source": "NCBI - Medical Nutrition Therapy for Diabetes"
+  },
+  {
+    "condition": "diabetes",
+    "category": "fructose",
+    "gender": "both",
+    "guideline": "Limit fructose added to food; naturally occurring fructose in fruit is acceptable if not excessive.",
+    "per_serving_limit": 5,
+    "daily_limit": 12,
+    "unit": "% energy",
+    "source": "NCBI - Medical Nutrition Therapy for Diabetes"
+  },
+  {
+    "condition": "diabetes",
+    "category": "fat",
+    "gender": "both",
+    "guideline": "General healthy fat intake recommendation for the population.",
+    "per_serving_limit": 15,
+    "daily_limit": 35,
+    "unit": "% energy",
+    "source": "NCBI - Medical Nutrition Therapy for Diabetes"
+  },
+  {
+    "condition": "diabetes",
+    "category": "saturated_fat",
+    "gender": "both",
+    "guideline": "Limit consumption of saturated fats to reduce LDL cholesterol and CVD risk.",
+    "per_serving_limit": 7,
+    "daily_limit": 10,
+    "unit": "% energy",
+    "source": "NCBI - Medical Nutrition Therapy for Diabetes"
+  },
+  {
+    "condition": "diabetes",
+    "category": "trans_fat",
+    "gender": "both",
+    "guideline": "Minimize intake of trans fatty acids/hydrogenated fats to as low as possible.",
+    "per_serving_limit": 0,
+    "daily_limit": 1,
+    "unit": "% energy",
+    "source": "NCBI - Medical Nutrition Therapy for Diabetes"
+  },
+  {
+    "condition": "diabetes",
+    "category": "cholesterol",
+    "gender": "both",
+    "guideline": "Limit dietary cholesterol to help reduce LDL cholesterol levels.",
+    "per_serving_limit": 100,
+    "daily_limit": 200,
+    "unit": "mg",
+    "source": "NCBI - Medical Nutrition Therapy for Diabetes"
+  },
+  {
+    "condition": "diabetes",
+    "category": "phytosterols",
+    "gender": "both",
+    "guideline": "Consuming plant stanols or sterols can help reduce total and LDL cholesterol.",
+    "per_serving_limit": 1,
+    "recommended_daily": 2,
+    "unit": "g",
+    "source": "NCBI - Medical Nutrition Therapy for Diabetes"
+  },
+  {
+    "condition": "diabetes",
+    "category": "protein",
+    "gender": "both",
+    "guideline": "Individualized protein intake for individuals without diabetic kidney disease.",
+    "per_serving_limit": 30,
+    "recommended_daily": 1.5,
+    "unit": "g/kg",
+    "source": "NCBI - Medical Nutrition Therapy for Diabetes"
+  },
+  {
+    "condition": "diabetes",
+    "category": "protein",
+    "gender": "both",
+    "guideline": "Protein restriction for individuals with diabetic kidney disease (Stages 1-4).",
+    "per_serving_limit": 20,
+    "recommended_daily": 0.8,
+    "unit": "g/kg",
+    "source": "NCBI - Medical Nutrition Therapy for Diabetes"
+  },
+  {
+    "condition": "diabetes",
+    "category": "sodium",
+    "gender": "both",
+    "guideline": "Limit sodium consumption to manage blood pressure.",
+    "per_serving_limit": 800,
+    "daily_limit": 2300,
+    "unit": "mg",
+    "source": "NCBI - Medical Nutrition Therapy for Diabetes"
+  },
+  {
+    "condition": "diabetes",
+    "category": "alcohol",
+    "gender": "female",
+    "guideline": "Moderate alcohol consumption for women to avoid hypoglycemia and weight gain.",
+    "per_serving_limit": 1,
+    "daily_limit": 1,
+    "unit": "drink",
+    "source": "NCBI - Medical Nutrition Therapy for Diabetes"
+  },
+  {
+    "condition": "diabetes",
+    "category": "alcohol",
+    "gender": "male",
+    "guideline": "Moderate alcohol consumption for men to avoid hypoglycemia and weight gain.",
+    "per_serving_limit": 1,
+    "daily_limit": 2,
+    "unit": "drinks",
+    "source": "NCBI - Medical Nutrition Therapy for Diabetes"
+  },
+  {
+    "condition": "diabetes",
+    "category": "hypoglycemia_treatment",
+    "gender": "both",
+    "guideline": "The 15/15 rule: consume simple carbohydrate if blood glucose is below 70 mg/dL.",
+    "per_serving_limit": 15,
+    "daily_limit": 45,
+    "unit": "g",
+    "source": "NCBI - Medical Nutrition Therapy for Diabetes"
+  },
+  {
+    "condition": "diabetes",
+    "category": "physical_activity",
+    "gender": "both",
+    "guideline": "Recommended minimum daily moderate physical activity.",
+    "per_serving_limit": 30,
+    "recommended_daily": 150,
+    "unit": "minutes",
+    "source": "NCBI - Medical Nutrition Therapy for Diabetes"
+  },
+    {
+    "condition": "high cholesterol",
+    "category": "saturated_fat",
+    "gender": "both",
+    "guideline": "Limit saturated fats to reduce LDL levels and cardiovascular risk.",
+    "per_serving_limit": 3,
+    "daily_limit": 10,
+    "unit": "% energy",
+    "source": "NCBI - Low Cholesterol Diet"
+  },
+  {
+    "condition": "high cholesterol",
+    "category": "saturated_fat",
+    "gender": "both",
+    "guideline": "Stricter saturated fat limit for patients with predisposing conditions.",
+    "per_serving_limit": 2,
+    "daily_limit": 6,
+    "unit": "% energy",
+    "source": "NCBI - Low Cholesterol Diet"
+  },
+  {
+    "condition": "high cholesterol",
+    "category": "saturated_fat",
+    "gender": "both",
+    "guideline": "Maximum grams of saturated fat based on a 2000 calorie diet.",
+    "per_serving_limit": 4,
+    "daily_limit": 13,
+    "unit": "g",
+    "source": "MedlinePlus - Lowering Cholesterol with Diet"
+  },
+  {
+    "condition": "high cholesterol",
+    "category": "trans_fat",
+    "gender": "both",
+    "guideline": "Restrict calories from trans fats to as low as possible.",
+    "per_serving_limit": 0,
+    "daily_limit": 1,
+    "unit": "% energy",
+    "source": "NCBI - Low Cholesterol Diet"
+  },
+  {
+    "condition": "high cholesterol",
+    "category": "dietary_cholesterol",
+    "gender": "both",
+    "guideline": "Limit intake of dietary cholesterol to reduce serum levels.",
+    "per_serving_limit": 70,
+    "daily_limit": 200,
+    "unit": "mg",
+    "source": "MedlinePlus - Lowering Cholesterol with Diet"
+  },
+  {
+    "condition": "high cholesterol",
+    "category": "soluble_fiber",
+    "gender": "both",
+    "guideline": "High intake of soluble fiber prevents the digestive tract from absorbing cholesterol.",
+    "per_serving_limit": 5,
+    "daily_limit": 25,
+    "unit": "g",
+    "source": "MedlinePlus - Lowering Cholesterol with Diet"
+  },
+  {
+    "condition": "high cholesterol",
+    "category": "plant_stanols",
+    "gender": "both",
+    "guideline": "Increase plant stanols and sterols to block cholesterol absorption.",
+    "per_serving_limit": 1,
+    "daily_limit": 2,
+    "unit": "g",
+    "source": "MedlinePlus - Lowering Cholesterol with Diet"
+  },
+  {
+    "condition": "high cholesterol",
+    "category": "soy_protein",
+    "gender": "both",
+    "guideline": "Daily soy protein intake shown to lower LDL levels by 3% to 4%.",
+    "per_serving_limit": 8,
+    "daily_limit": 25,
+    "unit": "g",
+    "source": "NCBI - Low Cholesterol Diet"
+  },
+  {
+    "condition": "high cholesterol",
+    "category": "sodium",
+    "gender": "both",
+    "guideline": "Limit salt intake to manage blood pressure and overall heart risk.",
+    "per_serving_limit": 600,
+    "daily_limit": 2300,
+    "unit": "mg",
+    "source": "MedlinePlus - Lowering Cholesterol with Diet"
+  },
+  {
+    "condition": "high cholesterol",
+    "category": "alcohol",
+    "gender": "male",
+    "guideline": "Moderate alcohol intake limit for men to prevent triglyceride spikes.",
+    "per_serving_limit": 2,
+    "daily_limit": 2,
+    "unit": "drinks",
+    "source": "MedlinePlus - Lowering Cholesterol with Diet"
+  },
+  {
+    "condition": "high cholesterol",
+    "category": "alcohol",
+    "gender": "female",
+    "guideline": "Moderate alcohol intake limit for women to prevent triglyceride spikes.",
+    "per_serving_limit": 1,
+    "daily_limit": 1,
+    "unit": "drink",
+    "source": "MedlinePlus - Lowering Cholesterol with Diet"
+  },
+  {
+    "condition": "high cholesterol",
+    "category": "omega_3_fatty_acids",
+    "gender": "both",
+    "guideline": "Consume fish rich in omega-3s twice a week to lower LDL and triglycerides.",
+    "per_serving_limit": 150,
+    "daily_limit": 300,
+    "unit": "g/week",
+    "source": "Heart Foundation - Cholesterol and Healthy Eating"
+  },
+  {
+    "condition": "high cholesterol",
+    "category": "red_meat",
+    "gender": "both",
+    "guideline": "Limit unprocessed red meat to manage lipid profiles.",
+    "per_serving_limit": 115,
+    "daily_limit": 350,
+    "unit": "g/week",
+    "source": "Heart Foundation - Cholesterol and Healthy Eating"
+  },
+  {
+    "condition": "high cholesterol",
+    "category": "eggs",
+    "gender": "both",
+    "guideline": "Maximum recommended egg intake for individuals with high cholesterol or diabetes.",
+    "per_serving_limit": 1,
+    "daily_limit": 7,
+    "unit": "eggs/week",
+    "source": "Heart Foundation - Cholesterol and Healthy Eating"
+  },
+  {
+    "condition": "high cholesterol",
+    "category": "physical_activity",
+    "gender": "both",
+    "guideline": "Aerobic exercise to raise HDL and lower LDL cholesterol.",
+    "per_serving_limit": 40,
+    "daily_limit": 160,
+    "unit": "minutes/week",
+    "source": "NCBI - Low Cholesterol Diet"
+  },
+  {
+    "condition": "high cholesterol",
+    "category": "fruit",
+    "gender": "both",
+    "guideline": "Daily recommended servings of fruit for fiber and nutrients.",
+    "per_serving_limit": 1,
+    "daily_limit": 2,
+    "unit": "servings",
+    "source": "Heart Foundation - Cholesterol and Healthy Eating"
+  },
+  {
+    "condition": "high cholesterol",
+    "category": "fats",
+    "gender": "both",
+    "guideline": "Total fat intake as a percentage of daily calories.",
+    "per_serving_limit": 12,
+    "daily_limit": 35,
+    "unit": "% energy",
+    "source": "MedlinePlus - Lowering Cholesterol with Diet"
+  },
+  {
+    "condition": "high cholesterol",
+    "category": "processed_meats",
+    "gender": "both",
+    "guideline": "Avoid processed meats high in industrial trans fats and sodium.",
+    "per_serving_limit": 0,
+    "daily_limit": 0,
+    "unit": "g",
+    "source": "NCBI - Low Cholesterol Diet"
+  },
+  {
+    "condition": "high cholesterol",
+    "category": "olive_oil",
+    "gender": "both",
+    "guideline": "Healthy monounsaturated fat source recommended for daily use.",
+    "per_serving_limit": 1,
+    "daily_limit": 4,
+    "unit": "tablespoons",
+    "source": "Cleveland Clinic - Cholesterol and Nutrition"
+  },
+  {
+    "condition": "high cholesterol",
+    "category": "nuts",
+    "gender": "both",
+    "guideline": "Portion size for unsalted nuts as a healthy fat snack.",
+    "per_serving_limit": 0.25,
+    "daily_limit": 1.75,
+    "unit": "cup/week",
+    "source": "Cleveland Clinic - Cholesterol and Nutrition"
+  }
+]
