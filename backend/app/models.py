@@ -14,6 +14,7 @@ class User(SQLModel, table=True):
     goals: Optional[str] = None
     weight: Optional[int] = None
     height: Optional[int] = None
+    health_details:Optional[str] = None
     created_at: datetime = Field(default_factory=datetime.now)
 
 

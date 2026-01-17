@@ -122,6 +122,67 @@ class NutritionAnalyzer:
                     'error': str(e),
                     'message': "I apologize, but I encountered an error while analyzing this product. Please try again."
                 }
+            
+    def process_chat_message(user_message: str, user_profile: dict, history_context: str) -> dict:
+        """
+        Analyzes a chat message using RAG context + Database History.
+        """
+        # Initialize the analyzer to access the vector DB
+        analyzer = NutritionAnalyzer(db_name="disease-guidelines")
+        
+        # 1. Get RAG Context for the *current* specific question
+        # We construct a search query that includes user context
+        search_query = (
+            f"{user_message}. "
+            f"User has {user_profile.get('disease', 'no conditions')} "
+            f"and goals: {user_profile.get('goals', 'general health')}."
+        )
+        
+        relevant_guidelines = get_relevant_passages(analyzer.db, search_query, n_results=3)
+        
+        guidelines_text = ""
+        if relevant_guidelines:
+            guidelines_text = "\nRelevant Nutrition Guidelines:\n"
+            for i, g in enumerate(relevant_guidelines, 1):
+                guidelines_text += f"{i}. {g['content']}\n"
+        
+        # 2. Construct the Prompt with History
+        system_prompt = f"""You are a friendly and knowledgeable Nutrition Assistant at Nutrio.
+        
+        User Profile:
+        - Name: {user_profile.get('name')}
+        - Health Conditions: {user_profile.get('disease') or 'None'}
+        - Goals: {user_profile.get('goals') or 'None'}
+        - Allergies/Preferences: {user_profile.get('allergies') or 'None'}
+        
+        {guidelines_text}
+        
+        Recent Conversation History:
+        {history_context}
+        
+        User's New Message: {user_message}
+        
+        Task: Reply to the user. Use the relevant guidelines if they apply to the specific question. 
+        If the user asks about previous topics, refer to the history. 
+        Keep the tone encouraging, concise (under 80 words), and safe. 
+        If you don't know something, admit it politely."""
+
+        # 3. Call Gemini
+        try:
+            response = client.models.generate_content(
+                model='gemini-2.5-flash',
+                contents=system_prompt
+            )
+            return {
+                'success': True,
+                'response': response.text
+            }
+        except Exception as e:
+            print(f"Chat Error: {str(e)}")
+            return {
+                'success': False,
+                'response': "I'm having trouble connecting right now. Please try again."
+            }
 
 
 def analyze_nutrition(nutrition:dict,disease:str,gender:str='male',goals:str='none',allergies:str='none') -> str:

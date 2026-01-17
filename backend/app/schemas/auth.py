@@ -16,6 +16,7 @@ class UserResponse(BaseModel):
     email: EmailStr
     weight: Optional[int] = None
     height: Optional[int] = None
+    health_details:Optional[str] = None
     gender: Optional[str] = None 
     health_issues: Optional[str] = None
     dietary_preferences: Optional[str] = None
