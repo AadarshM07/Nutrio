@@ -9,3 +9,8 @@ class DetailsRequest(BaseModel):
 class ChatRequest(BaseModel):
     user_id: int
     message: str
+
+class CompareRequest(BaseModel):
+    token: str
+    product1: dict  # Full product data for first product
+    product2: dict  # Full product data for second product

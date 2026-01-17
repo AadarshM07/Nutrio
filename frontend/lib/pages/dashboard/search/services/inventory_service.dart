@@ -3,8 +3,10 @@ import 'package:frontend/pages/constants/constants.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/product_model.dart';
+import '../../../constants/constants.dart';
 
 class InventoryService {
+  static const String baseUrl = '$apiURL/inv';
 
   static Future<bool> addToInventory(
     ProductDetailsResponse productDetails,

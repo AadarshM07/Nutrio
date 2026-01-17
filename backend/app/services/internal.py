@@ -3,12 +3,12 @@ from typing import Optional
 import httpx
 
 # Internal imports
-from app.schemas.internal import DetailsRequest
+from app.schemas.internal import DetailsRequest, CompareRequest
 from app.services.auth import get_current_user
 from app.models import User
 from app.database import get_session
 from sqlmodel.ext.asyncio.session import AsyncSession
-from app.integrations.app import analyze_nutrition
+from app.integrations.app import analyze_nutrition, compare_products
 
 router = APIRouter()
 
@@ -72,3 +72,40 @@ async def get_product_details(request: DetailsRequest,db: AsyncSession = Depends
                 status_code=400, 
                 detail="Please provide either a 'barcode' or a 'product_name'"
             )
+
+
+@router.post("/compare")
+async def compare_two_products(request: CompareRequest, db: AsyncSession = Depends(get_session)):
+    """
+    Compare two products and determine which is better for the user based on their health profile.
+    """
+    current_user = await get_current_user(request.token, db)
+    if not current_user:
+        raise HTTPException(status_code=401, detail="Invalid auth token")
+
+    try:
+        result = compare_products(
+            product1=request.product1,
+            product2=request.product2,
+            disease=current_user.health_issues or "",
+            gender=current_user.gender or "male",
+            goals=current_user.goals or "",
+            allergies=current_user.dietary_preferences or ""
+        )
+
+        if result['success']:
+            return {
+                "success": True,
+                "comparison": result['comparison']
+            }
+        else:
+            raise HTTPException(
+                status_code=500,
+                detail=result.get('message', 'Failed to compare products')
+            )
+    except Exception as e:
+        print(f"Compare endpoint error: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error comparing products: {str(e)}"
+        )

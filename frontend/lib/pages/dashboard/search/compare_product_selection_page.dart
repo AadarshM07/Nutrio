@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:openfoodfacts/openfoodfacts.dart';
 import 'services/product_service.dart';
+import 'services/compare_service.dart';
 import 'models/product_model.dart' as local;
 import 'barcode_scanner_page.dart';
 import 'product_not_found_page.dart';
+import 'comparison_result_page.dart';
 
 class CompareProductSelectionPage extends StatefulWidget {
   final local.ProductDetailsResponse firstProduct;
@@ -98,17 +100,69 @@ class _CompareProductSelectionPageState
     }
   }
 
-  void _navigateToComparison(local.ProductDetailsResponse secondProduct) {
-    // TODO: Navigate to comparison page
-    // For now, show a snackbar
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Comparing: ${widget.firstProduct.product.productName} vs ${secondProduct.product.productName}',
+  void _navigateToComparison(local.ProductDetailsResponse secondProduct) async {
+    // Show loading indicator
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: Card(
+          child: Padding(
+            padding: EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(color: Color(0xFF2C5F2D)),
+                SizedBox(height: 16),
+                Text(
+                  'Analyzing products...',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                ),
+              ],
+            ),
+          ),
         ),
-        backgroundColor: const Color(0xFF2C5F2D),
       ),
     );
+
+    try {
+      final comparisonResult = await CompareService.compareProducts(
+        widget.firstProduct,
+        secondProduct,
+      );
+
+      if (!mounted) return;
+      Navigator.pop(context); // Close loading dialog
+
+      if (comparisonResult != null) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ComparisonResultPage(
+              firstProduct: widget.firstProduct,
+              secondProduct: secondProduct,
+              comparisonData: comparisonResult,
+            ),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to compare products. Please try again.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      Navigator.pop(context); // Close loading dialog
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error: ${e.toString().replaceAll('Exception: ', '')}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   Future<void> _navigateToProductForComparison(Product product) async {
@@ -499,8 +553,8 @@ class _CompareProductSelectionPageState
                                       if (nutritionGrade != 'N/A')
                                         Container(
                                           padding: const EdgeInsets.symmetric(
-                                            horizontal: 10,
-                                            vertical: 6,
+                                            horizontal: 8,
+                                            vertical: 4,
                                           ),
                                           decoration: BoxDecoration(
                                             color: _getNutritionGradeColor(
@@ -510,30 +564,13 @@ class _CompareProductSelectionPageState
                                               8,
                                             ),
                                           ),
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              Text(
-                                                'Grade $nutritionGrade',
-                                                style: const TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 11,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                              Text(
-                                                _getNutritionGradeLabel(
-                                                  nutritionGrade,
-                                                ),
-                                                style: const TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 9,
-                                                  fontWeight: FontWeight.w500,
-                                                ),
-                                              ),
-                                            ],
+                                          child: Text(
+                                            'Grade $nutritionGrade',
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.bold,
+                                            ),
                                           ),
                                         ),
                                     ],

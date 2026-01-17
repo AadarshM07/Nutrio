@@ -293,3 +293,120 @@ def analyze_nutrition(nutrition:dict,disease:str,gender:str='male',goals:str='no
 def generate_dashboard_stats(user: dict, inventory: list) -> dict:
     analyzer = NutritionAnalyzer(db_name="disease-guidelines")
     return analyzer.analyze_user_dashboard(user, inventory)
+
+
+def compare_products(
+    product1: dict,
+    product2: dict,
+    disease: str,
+    gender: str = "male",
+    goals: str = "none",
+    allergies: str = "none"
+) -> dict:
+    """
+    Compare two products and determine which is better for the user.
+    """
+
+    analyzer = NutritionAnalyzer(db_name="disease-guidelines")
+
+    # --- Minimal guideline (optional, short) ---
+    guidelines_text = ""
+    if disease and disease.lower() != "none":
+        guidelines = get_relevant_passages(
+            analyzer.db,
+            f"Dietary guidelines for {disease}",
+            n_results=1
+        )
+        if guidelines:
+            guidelines_text = f"Guideline: {guidelines[0]['content'][:120]}"
+
+    # --- Compact product data ---
+    def compact(p: dict) -> dict:
+        n = p.get("nutriments", {})
+        return {
+            "name": p.get("product_name"),
+            "grade": p.get("nutrition_grades"),
+            "nova": p.get("nova_group"),
+            "sugar": n.get("sugars_100g"),
+            "fat": n.get("fat_100g"),
+            "salt": n.get("salt_100g"),
+            "protein": n.get("proteins_100g"),
+            "ingredients": (p.get("ingredients_text") or "")[:150]
+        }
+
+    p1 = compact(product1)
+    p2 = compact(product2)
+
+    name1 = p1.get("name", "Product 1")
+    name2 = p2.get("name", "Product 2")
+
+    # --- STRICT minimal-output prompt ---
+    system_prompt = f"""
+You are Nutrio’s nutrition comparison engine.
+
+User:
+Gender: {gender}
+Condition: {disease if disease and disease.lower() != "none" else "None"}
+Goals: {goals if goals != "none" else "General health"}
+Allergies: {allergies if allergies != "none" else "None"}
+
+{guidelines_text}
+
+Product 1: {p1}
+Product 2: {p2}
+
+Rules:
+- Be concise
+- Max 2 pros and 2 cons per product
+- Verdict: max 1 sentence mention which product is better here , be more like a personalized suggestion to the user
+- Recommendation: max 20 words
+- Key factors: exactly 3 short points
+
+Return STRICT JSON ONLY in this format:
+{{
+  "winner": "1" or "2",
+  "winner_name": "{name1} or {name2}",
+  "loser_name": "",
+  "verdict": "",
+  "comparison": {{
+    "product1": {{
+      "name": "{name1}",
+      "pros": [],
+      "cons": [],
+      "health_rating": "Good/Moderate/Poor for user"
+    }},
+    "product2": {{
+      "name": "{name2}",
+      "pros": [],
+      "cons": [],
+      "health_rating": "Good/Moderate/Poor for user"
+    }}
+  }},
+  "key_factors": [],
+  "recommendation": ""
+}}
+""".strip()
+
+    try:
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=system_prompt,
+            config=genai.types.GenerateContentConfig(
+                response_mime_type="application/json"
+            )
+        )
+
+        import json
+        data = json.loads(response.text)
+        return {
+            "success": True,
+            "comparison": data
+        }
+
+    except Exception as e:
+        print(f"Compare Products Error: {e}")
+        return {
+            "success": False,
+            "error": str(e),
+            "message": "Unable to compare products at the moment. Please try again."
+        }
