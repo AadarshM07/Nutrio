@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/pages/dashboard/chat/chat.dart';
 import 'dart:ui';
 import 'home/home.dart';
 import 'search/search.dart';
@@ -13,10 +14,23 @@ class Dashboard extends StatefulWidget {
 
 class _DashboardState extends State<Dashboard> {
   int _selectedIndex = 0;
-
+  bool _isChatOpen = false;
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
+      _isChatOpen = false;
+    });
+  }
+
+void _openChat() {
+    setState(() {
+      _isChatOpen = true;
+    });
+  }
+
+  void _closeChat() {
+    setState(() {
+      _isChatOpen = false;
     });
   }
 
@@ -163,15 +177,21 @@ Widget build(BuildContext context) {
   return Scaffold(
     extendBody: true,  
     backgroundColor: Colors.white,
-    body: Column(
-      children: [
-        _buildTopBar(),
-        Expanded(
-          child: _getBodyContent(),
-        ),
-      ],
-    ),
+    body: _isChatOpen 
+          ? SafeArea(child: ChatPage(onBack: _closeChat)) 
+          : Column(
+              children: [
+                _buildTopBar(),
+                Expanded(
+                  // Pass the callback to HomePage
+                  child: _selectedIndex == 0 
+                      ? HomePage(onChatTapped: _openChat) 
+                      : _getBodyContent(), 
+                ),
+              ],
+            ),
     bottomNavigationBar: _buildBottomNavigation(),
   );
 }
+
 }

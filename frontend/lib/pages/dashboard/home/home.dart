@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
-
+  final VoidCallback? onChatTapped;
+  const HomePage({super.key, this.onChatTapped});
+  
   @override
   State<HomePage> createState() => _HomePageState();
 }
@@ -65,7 +66,7 @@ class _HomePageState extends State<HomePage> {
           ),
           const SizedBox(width: 12),
           ElevatedButton(
-            onPressed: () {},
+            onPressed: widget.onChatTapped,
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.white,
               foregroundColor: Colors.green,
