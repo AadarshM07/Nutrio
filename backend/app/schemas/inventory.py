@@ -6,4 +6,6 @@ class InventoryAddRequest(BaseModel):
     title: str
     img: str
     tag: str
-    nutrient_scrore: str 
+    nutrient_score: str
+    product_data: str
+    ai_feedback: str 

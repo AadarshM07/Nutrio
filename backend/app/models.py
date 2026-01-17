@@ -28,11 +28,13 @@ class ChatHistory(SQLModel, table=True):
 
 class Inventory(SQLModel, table=True):
     user_id: int = Field(foreign_key="user.id")
-    barcode: str = Field(primary_key=str)
+    barcode: str = Field(primary_key=True)
     title: str
     img: str
-    tag:str
-    nutrient_scrore:str
+    tag: str
+    nutrient_score: str
+    product_data: str  # JSON string of full product data
+    ai_feedback: str  # AI analysis/recommendation
     timestamp: datetime = Field(default_factory=datetime.now)
 
 

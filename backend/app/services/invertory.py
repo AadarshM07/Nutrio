@@ -60,7 +60,9 @@ async def add_to_inventory(
         title=item_data.title,
         img=item_data.img,
         tag=item_data.tag,
-        nutrient_scrore=item_data.nutrient_scrore
+        nutrient_score=item_data.nutrient_score,
+        product_data=item_data.product_data,
+        ai_feedback=item_data.ai_feedback
     )
 
     try:
