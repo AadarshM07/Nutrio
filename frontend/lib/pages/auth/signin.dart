@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/pages/dashboard/dashboard.dart';
 import './auth_service.dart';
 import './auth_widgets.dart';
 
@@ -72,6 +73,16 @@ class _SignInPageState extends State<SignInPage> {
                     ),
                   ),
                   const SizedBox(height: 40),
+                  ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => Dashboard()),
+                  );
+                },
+                child: Text("Go to Second Page"),
+              ),
+
 
                   // Fields
                   AuthTextField(
