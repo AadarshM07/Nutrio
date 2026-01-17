@@ -2,14 +2,13 @@ class User {
   final int id;
   final String name;
   final String email;
-  
-  // New Fields
   final int? weight;
   final int? height;
   final String? gender;
   final String? healthIssues;
   final String? dietaryPreferences;
   final String? goals;
+  final String? healthDetails; // NEW FIELD
 
   User({
     required this.id,
@@ -21,24 +20,23 @@ class User {
     this.healthIssues,
     this.dietaryPreferences,
     this.goals,
+    this.healthDetails,
   });
 
+  bool get isSurveyCompleted => gender != null && weight != null && height != null;
 
-  bool get isSurveyCompleted {
-    return gender != null && weight != null && height != null;
-  }
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
       id: json['id'] ?? 0,
       name: json['name'] ?? '',
       email: json['email'] ?? '',
-      // Parse new fields
       weight: json['weight'],
       height: json['height'],
       gender: json['gender'],
       healthIssues: json['health_issues'],
       dietaryPreferences: json['dietary_preferences'],
       goals: json['goals'],
+      healthDetails: json['health_details'], // Parse new field
     );
   }
 
@@ -53,6 +51,7 @@ class User {
       'health_issues': healthIssues,
       'dietary_preferences': dietaryPreferences,
       'goals': goals,
+      'health_details': healthDetails,
     };
   }
 }
