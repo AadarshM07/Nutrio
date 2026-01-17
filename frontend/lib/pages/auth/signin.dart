@@ -1,6 +1,5 @@
 import 'dart:ui'; // Required for ImageFilter
 import 'package:flutter/material.dart';
-import 'package:frontend/pages/dashboard/dashboard.dart';
 import './auth_service.dart';
 import './auth_widgets.dart';
 

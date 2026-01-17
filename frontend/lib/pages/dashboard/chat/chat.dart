@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/pages/dashboard/chat/chatservice.dart';
+// Import the service
 
 class ChatPage extends StatefulWidget {
   final VoidCallback onBack;
@@ -11,46 +13,85 @@ class ChatPage extends StatefulWidget {
 
 class _ChatPageState extends State<ChatPage> {
   final TextEditingController _controller = TextEditingController();
-  final List<Map<String, dynamic>> _messages = [
-    {
-      "isUser": false,
-      "message": "Hello Alex! I'm your AI Nutritionist. How can I help you reach your goals today?"
-    },
-    {
-      "isUser": true, 
-      "message": "How much protein is in boiled eggs?"
-    },
-    {
-      "isUser": false, 
-      "message": "One large boiled egg contains about 6 grams of protein. It also provides essential nutrients like Vitamin D and Choline."
-    },
-  ];
+  final ScrollController _scrollController = ScrollController();
+  final ChatService _chatService = ChatService();
+  
+  List<ChatMessage> _messages = [];
+  bool _isLoadingHistory = true;
+  bool _isSending = false;
 
-  void _sendMessage() {
-    if (_controller.text.trim().isEmpty) return;
-    setState(() {
-      _messages.add({"isUser": true, "message": _controller.text.trim()});
-    });
-    _controller.clear();
-    
-    // Simulate AI response
-    Future.delayed(const Duration(seconds: 1), () {
-      if (mounted) {
-        setState(() {
-          _messages.add({
-            "isUser": false, 
-            "message": "That's a great question! Let me analyze your daily intake..."
-          });
-        });
+  @override
+  void initState() {
+    super.initState();
+    _loadHistory();
+  }
+
+  Future<void> _loadHistory() async {
+    final history = await _chatService.getHistory();
+    if (mounted) {
+      setState(() {
+        _messages = history;
+        _isLoadingHistory = false;
+      });
+      _scrollToBottom();
+    }
+  }
+
+  void _scrollToBottom() {
+    // Small delay to ensure list is rendered before scrolling
+    Future.delayed(const Duration(milliseconds: 100), () {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
       }
     });
+  }
+
+  void _sendMessage() async {
+    final text = _controller.text.trim();
+    if (text.isEmpty || _isSending) return;
+
+    // 1. Add User Message Immediately (Optimistic UI)
+    setState(() {
+      _messages.add(ChatMessage(
+        text: text, 
+        isUser: true, 
+        timestamp: DateTime.now()
+      ));
+      _isSending = true;
+    });
+    _controller.clear();
+    _scrollToBottom();
+
+    // 2. Send to Backend
+    final aiResponse = await _chatService.sendMessage(text);
+
+    if (mounted) {
+      setState(() {
+        _isSending = false;
+        if (aiResponse != null) {
+          _messages.add(aiResponse);
+        } else {
+          // Error handling: Add a system error message locally
+          _messages.add(ChatMessage(
+            text: "Failed to get response. Please try again.",
+            isUser: false,
+            timestamp: DateTime.now(),
+          ));
+        }
+      });
+      _scrollToBottom();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        // Custom Header for Chat
+        // --- Header ---
         Container(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
           decoration: BoxDecoration(
@@ -90,43 +131,66 @@ class _ChatPageState extends State<ChatPage> {
           ),
         ),
         
-        // Chat Messages
+        // --- Chat List ---
         Expanded(
-          child: ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: _messages.length,
-            itemBuilder: (context, index) {
-              final msg = _messages[index];
-              final isUser = msg['isUser'];
-              return Align(
-                alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
-                child: Container(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
-                  decoration: BoxDecoration(
-                    color: isUser ? Colors.green : Colors.grey[100],
-                    borderRadius: BorderRadius.only(
-                      topLeft: const Radius.circular(16),
-                      topRight: const Radius.circular(16),
-                      bottomLeft: isUser ? const Radius.circular(16) : Radius.zero,
-                      bottomRight: isUser ? Radius.zero : const Radius.circular(16),
+          child: _isLoadingHistory
+              ? const Center(child: CircularProgressIndicator(color: Colors.green))
+              : _messages.isEmpty 
+                  ? Center(
+                      child: Text(
+                        "Ask me anything about your diet!",
+                        style: TextStyle(color: Colors.grey[400]),
+                      ),
+                    )
+                  : ListView.builder(
+                      controller: _scrollController,
+                      padding: const EdgeInsets.all(16),
+                      itemCount: _messages.length + (_isSending ? 1 : 0),
+                      itemBuilder: (context, index) {
+                        // Show a loading bubble if sending
+                        if (index == _messages.length) {
+                          return const Align(
+                            alignment: Alignment.centerLeft,
+                            child: Padding(
+                              padding: EdgeInsets.only(left: 16, bottom: 12),
+                              child: SizedBox(
+                                width: 20, height: 20,
+                                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.green),
+                              ),
+                            ),
+                          );
+                        }
+
+                        final msg = _messages[index];
+                        return Align(
+                          alignment: msg.isUser ? Alignment.centerRight : Alignment.centerLeft,
+                          child: Container(
+                            margin: const EdgeInsets.only(bottom: 12),
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
+                            decoration: BoxDecoration(
+                              color: msg.isUser ? Colors.green : Colors.grey[100],
+                              borderRadius: BorderRadius.only(
+                                topLeft: const Radius.circular(16),
+                                topRight: const Radius.circular(16),
+                                bottomLeft: msg.isUser ? const Radius.circular(16) : Radius.zero,
+                                bottomRight: msg.isUser ? Radius.zero : const Radius.circular(16),
+                              ),
+                            ),
+                            child: Text(
+                              msg.text,
+                              style: TextStyle(
+                                color: msg.isUser ? Colors.white : Colors.black87,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ),
+                        );
+                      },
                     ),
-                  ),
-                  child: Text(
-                    msg['message'],
-                    style: TextStyle(
-                      color: isUser ? Colors.white : Colors.black87,
-                      fontSize: 14,
-                    ),
-                  ),
-                ),
-              );
-            },
-          ),
         ),
 
-        // Input Area
+        // --- Input Area ---
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
@@ -144,6 +208,7 @@ class _ChatPageState extends State<ChatPage> {
               Expanded(
                 child: TextField(
                   controller: _controller,
+                  textCapitalization: TextCapitalization.sentences,
                   decoration: InputDecoration(
                     hintText: 'Ask about food, calories...',
                     hintStyle: TextStyle(color: Colors.grey[400], fontSize: 14),
@@ -155,6 +220,7 @@ class _ChatPageState extends State<ChatPage> {
                       borderSide: BorderSide.none,
                     ),
                   ),
+                  onSubmitted: (_) => _sendMessage(), // Send on Enter
                 ),
               ),
               const SizedBox(width: 8),
@@ -166,7 +232,12 @@ class _ChatPageState extends State<ChatPage> {
                     color: Colors.green,
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.send, color: Colors.white, size: 20),
+                  child: _isSending 
+                    ? const SizedBox(
+                        width: 20, height: 20,
+                        child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
+                      )
+                    : const Icon(Icons.send, color: Colors.white, size: 20),
                 ),
               ),
             ],
