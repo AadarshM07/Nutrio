@@ -3,6 +3,7 @@ import 'models/product_model.dart';
 import 'widgets/expandable_section.dart';
 import 'widgets/nutrition_widgets.dart';
 import 'compare_product_selection_page.dart';
+import 'services/inventory_service.dart';
 
 class ProductDetailsPage extends StatelessWidget {
   final ProductDetailsResponse productDetails;
@@ -115,6 +116,61 @@ class ProductDetailsPage extends StatelessWidget {
                     child: NutritionGradeBadge(
                       grade: product.nutritionGrades,
                       size: 55,
+                    ),
+                  ),
+                  // Add to Inventory button
+                  Positioned(
+                    left: 16,
+                    bottom: 16,
+                    child: ElevatedButton.icon(
+                      onPressed: () async {
+                        try {
+                          await InventoryService.addToInventory(productDetails);
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  '${product.productName} added to inventory',
+                                ),
+                                backgroundColor: const Color(0xFF2C5F2D),
+                                duration: const Duration(seconds: 2),
+                              ),
+                            );
+                          }
+                        } catch (e) {
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  e.toString().replaceAll('Exception: ', ''),
+                                ),
+                                backgroundColor: Colors.red,
+                                duration: const Duration(seconds: 3),
+                              ),
+                            );
+                          }
+                        }
+                      },
+                      icon: const Icon(Icons.add_shopping_cart, size: 18),
+                      label: const Text(
+                        'Add to Inventory',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF2C5F2D),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 10,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 4,
+                      ),
                     ),
                   ),
                 ],
