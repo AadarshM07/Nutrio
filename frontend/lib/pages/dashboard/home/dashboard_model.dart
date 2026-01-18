@@ -1,52 +1,81 @@
-import 'dart:ui';
+class AnalysisData {
+  final int healthScore;
+  final String predictionSummary;
+  final ImpactAnalysis moodAnalysis;
+  final ImpactAnalysis bodyAnalysis;
+  final List<KeyNutrient> keyNutrients;
+  final String recommendation;
 
-class GraphDataPoint {
-  final String label;
-  final double value;
-  final Color color;
-
-  GraphDataPoint({
-    required this.label,
-    required this.value,
-    required this.color,
+  AnalysisData({
+    required this.healthScore,
+    required this.predictionSummary,
+    required this.moodAnalysis,
+    required this.bodyAnalysis,
+    required this.keyNutrients,
+    required this.recommendation,
   });
 
-  factory GraphDataPoint.fromJson(Map<String, dynamic> json) {
-    return GraphDataPoint(
-      label: json['label'],
-      value: (json['value'] as num).toDouble(),
-      color: _hexToColor(json['color']),
+  factory AnalysisData.fromJson(Map<String, dynamic> json) {
+    return AnalysisData(
+      healthScore: json['health_score'] ?? 0,
+      predictionSummary: json['prediction_summary'] ?? "No prediction available.",
+      moodAnalysis: ImpactAnalysis.fromJson(json['mood_analysis'] ?? {}),
+      bodyAnalysis: ImpactAnalysis.fromJson(json['body_analysis'] ?? {}),
+      keyNutrients: (json['key_nutrients'] as List? ?? [])
+          .map((e) => KeyNutrient.fromJson(e))
+          .toList(),
+      recommendation: json['recommendation'] ?? "Keep tracking your inventory to get insights.",
     );
   }
 
-  static Color _hexToColor(String hexString) {
-    final buffer = StringBuffer();
-    if (hexString.length == 6 || hexString.length == 7) buffer.write('ff');
-    buffer.write(hexString.replaceFirst('#', ''));
-    return Color(int.parse(buffer.toString(), radix: 16));
-  }
+  // NEW: Required for saving to SharedPrefs
+  Map<String, dynamic> toJson() => {
+    'health_score': healthScore,
+    'prediction_summary': predictionSummary,
+    'mood_analysis': moodAnalysis.toJson(),
+    'body_analysis': bodyAnalysis.toJson(),
+    'key_nutrients': keyNutrients.map((e) => e.toJson()).toList(),
+    'recommendation': recommendation,
+  };
 }
 
-class DashboardData {
-  final List<GraphDataPoint> healthBreakdown;
-  final List<GraphDataPoint> macroDistribution;
-  final String aiFeedback;
+class ImpactAnalysis {
+  final String state;
+  final String mechanism;
 
-  DashboardData({
-    required this.healthBreakdown,
-    required this.macroDistribution,
-    required this.aiFeedback,
-  });
+  ImpactAnalysis({required this.state, required this.mechanism});
 
-  factory DashboardData.fromJson(Map<String, dynamic> json) {
-    return DashboardData(
-      healthBreakdown: (json['health_breakdown'] as List)
-          .map((e) => GraphDataPoint.fromJson(e))
-          .toList(),
-      macroDistribution: (json['macro_distribution'] as List)
-          .map((e) => GraphDataPoint.fromJson(e))
-          .toList(),
-      aiFeedback: json['ai_feedback'] ?? "No feedback available.",
+  factory ImpactAnalysis.fromJson(Map<String, dynamic> json) {
+    return ImpactAnalysis(
+      state: json['state'] ?? "Unknown",
+      mechanism: json['mechanism'] ?? "Insufficient data.",
     );
   }
+
+  Map<String, dynamic> toJson() => {
+    'state': state,
+    'mechanism': mechanism,
+  };
+}
+
+class KeyNutrient {
+  final String nutrient;
+  final String status;
+  final String impact;
+
+  KeyNutrient({required this.nutrient, required this.status, required this.impact});
+
+  factory KeyNutrient.fromJson(Map<String, dynamic> json) {
+    return KeyNutrient(
+      nutrient: json['nutrient'] ?? "Nutrient",
+      status: json['status'] ?? "Normal",
+      impact: json['impact'] ?? "",
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    'nutrient': nutrient,
+    'status': status,
+    'impact': impact,
+  };
 }

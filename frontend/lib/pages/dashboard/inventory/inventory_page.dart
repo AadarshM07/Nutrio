@@ -1,12 +1,13 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:intl/intl.dart'; // Import intl for date formatting
+
+// Import your existing constants and pages
 import 'package:frontend/pages/constants/constants.dart';
 import 'package:frontend/pages/dashboard/search/models/product_model.dart';
 import 'package:frontend/pages/dashboard/search/product_details_page.dart';
-import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
-
-// Import your existing models and pages
 
 class InventoryItem {
   final String barcode;
@@ -16,6 +17,7 @@ class InventoryItem {
   final String nutrientScore;
   final String productData;
   final String aiFeedback;
+  final DateTime timestamp; // Added Timestamp
 
   InventoryItem({
     required this.barcode,
@@ -25,6 +27,7 @@ class InventoryItem {
     required this.nutrientScore,
     required this.productData,
     required this.aiFeedback,
+    required this.timestamp,
   });
 
   factory InventoryItem.fromJson(Map<String, dynamic> json) {
@@ -34,9 +37,12 @@ class InventoryItem {
       img: json['img'],
       tag: json['tag'],
       nutrientScore: json['nutrient_score'] ?? '?',
-      // Ensure we handle cases where product_data might be missing or empty
-      productData: json['product_data'] ?? "{}", 
+      productData: json['product_data'] ?? "{}",
       aiFeedback: json['ai_feedback'] ?? "No feedback available.",
+      // Parse the timestamp from backend (ISO 8601 string)
+      timestamp: json['timestamp'] != null 
+          ? DateTime.parse(json['timestamp']).toLocal() 
+          : DateTime.now(), 
     );
   }
 }
@@ -49,8 +55,13 @@ class InventoryPage extends StatefulWidget {
 }
 
 class _InventoryPageState extends State<InventoryPage> {
-  List<InventoryItem> _items = [];
+  // All items fetched from API
+  List<InventoryItem> _allItems = [];
+  // Items to display based on selected date
+  List<InventoryItem> _filteredItems = [];
+  
   bool _isLoading = true;
+  DateTime _selectedDate = DateTime.now();
 
   @override
   void initState() {
@@ -65,7 +76,6 @@ class _InventoryPageState extends State<InventoryPage> {
     if (token == null) return;
 
     try {
-      // Endpoint to fetch inventory
       final url = Uri.parse('$apiURL/inv/');
       final response = await http.get(
         url,
@@ -79,7 +89,10 @@ class _InventoryPageState extends State<InventoryPage> {
         final List<dynamic> data = json.decode(response.body);
         if (mounted) {
           setState(() {
-            _items = data.map((e) => InventoryItem.fromJson(e)).toList();
+            _allItems = data.map((e) => InventoryItem.fromJson(e)).toList();
+            // Sort by time descending (newest first)
+            _allItems.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+            _filterItemsByDate();
             _isLoading = false;
           });
         }
@@ -93,23 +106,33 @@ class _InventoryPageState extends State<InventoryPage> {
     }
   }
 
+  // Filter the master list based on _selectedDate
+  void _filterItemsByDate() {
+    setState(() {
+      _filteredItems = _allItems.where((item) {
+        return item.timestamp.year == _selectedDate.year &&
+               item.timestamp.month == _selectedDate.month &&
+               item.timestamp.day == _selectedDate.day;
+      }).toList();
+    });
+  }
+
+  void _onDateSelected(DateTime date) {
+    setState(() {
+      _selectedDate = date;
+    });
+    _filterItemsByDate();
+  }
+
   void _navigateToProductDetails(BuildContext context, InventoryItem item) {
     try {
-      // 1. Decode the stored JSON string back into a Map
       final Map<String, dynamic> productMap = json.decode(item.productData);
-
-      // 2. Convert the Map back into your Product model
-      // Note: Make sure your Product.fromJson can handle the map structure 
-      // saved in InventoryService.
       final Product product = Product.fromJson(productMap);
-
-      // 3. Create the Details Response object expected by the page
       final detailsResponse = ProductDetailsResponse(
         product: product,
         aiFeedback: item.aiFeedback,
       );
 
-      // 4. Navigate
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -122,7 +145,6 @@ class _InventoryPageState extends State<InventoryPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Error opening product: $e")),
       );
-      debugPrint("Error parsing product data: $e");
     }
   }
 
@@ -139,68 +161,162 @@ class _InventoryPageState extends State<InventoryPage> {
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
-      return const Center(child: CircularProgressIndicator(color: Color(0xFF2C5F2D)));
-    }
-
-    if (_items.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.inventory_2_outlined, size: 64, color: Colors.grey[300]),
-            const SizedBox(height: 16),
-            Text(
-              "Your pantry is empty", 
-              style: TextStyle(color: Colors.grey[500], fontSize: 16)
-            ),
-            const SizedBox(height: 8),
-            Text(
-              "Scan products to add them here", 
-              style: TextStyle(color: Colors.grey[400], fontSize: 14)
-            ),
-          ],
-        ),
-      );
-    }
-
     return Scaffold(
-      backgroundColor: Colors.grey[50], // Slightly off-white background
-      appBar: AppBar(
-        title: const Text(
-          "My Pantry", 
-          style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold)
-        ),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        centerTitle: false,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.sort, color: Colors.black87),
-            onPressed: () {
-              // Implement sort functionality if needed
-            },
-          )
+      backgroundColor: Colors.white,
+      body: Column(
+        children: [
+          // 1. Date Selector Strip
+          _buildDateSelector(),
+          
+          const Divider(height: 1),
+
+          // 2. Content Grid
+          Expanded(
+            child: _isLoading 
+              ? const Center(child: CircularProgressIndicator(color: Color(0xFF2C5F2D)))
+              : _filteredItems.isEmpty 
+                  ? _buildEmptyState()
+                  : _buildGrid(),
+          ),
         ],
       ),
-      body: GridView.builder(
-        padding: const EdgeInsets.all(16),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          childAspectRatio: 0.70, // Adjusted ratio for better fit
-          crossAxisSpacing: 16,
-          mainAxisSpacing: 16,
-        ),
-        itemCount: _items.length,
+    );
+  }
+
+  Widget _buildDateSelector() {
+    return Container(
+      height: 85,
+      color: Colors.white,
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        // Show 30 days back and 2 days forward
+        itemCount: 33, 
+        reverse: true, // Start from today/future
+        padding: const EdgeInsets.symmetric(horizontal: 10),
         itemBuilder: (context, index) {
-          final item = _items[index];
-          return _buildInventoryCard(item);
+          // Logic to generate dates (Today is at index 2 if reverse is true? No, let's keep it simple)
+          // Let's generate dates starting from Today - 30 days up to Today
+          // Actually, easier logic: Start at Today and go backwards?
+          // Let's do: Index 0 = Today + 2 days (Future), Index 32 = 30 days ago.
+          
+          final date = DateTime.now().subtract(Duration(days: index - 2)); 
+          
+          final isSelected = date.year == _selectedDate.year && 
+                             date.month == _selectedDate.month && 
+                             date.day == _selectedDate.day;
+
+          final isToday = date.year == DateTime.now().year && 
+                          date.month == DateTime.now().month && 
+                          date.day == DateTime.now().day;
+
+          return GestureDetector(
+            onTap: () => _onDateSelected(date),
+            child: Container(
+              width: 60,
+              margin: const EdgeInsets.symmetric(horizontal: 4),
+              decoration: BoxDecoration(
+                color: isSelected ? const Color(0xFF2C5F2D) : Colors.grey[50],
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: isSelected ? const Color(0xFF2C5F2D) : Colors.grey[200]!,
+                ),
+                boxShadow: isSelected ? [
+                  BoxShadow(color: const Color(0xFF2C5F2D).withOpacity(0.3), blurRadius: 8, offset: const Offset(0, 4))
+                ] : [],
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    DateFormat('E').format(date), // Day name (Mon, Tue)
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: isSelected ? Colors.white70 : Colors.grey,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    date.day.toString(),
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: isSelected ? Colors.white : Colors.black87,
+                    ),
+                  ),
+                  if (isToday) ...[
+                    const SizedBox(height: 4),
+                    Container(
+                      width: 4, height: 4,
+                      decoration: BoxDecoration(
+                        color: isSelected ? Colors.white : const Color(0xFF2C5F2D),
+                        shape: BoxShape.circle
+                      ),
+                    )
+                  ]
+                ],
+              ),
+            ),
+          );
         },
       ),
     );
   }
 
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.grey[100],
+              shape: BoxShape.circle,
+            ),
+            child: Icon(Icons.lunch_dining_outlined, size: 40, color: Colors.grey[400]),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            "No food logged for this day", 
+            style: TextStyle(color: Colors.grey[600], fontSize: 16)
+          ),
+          const SizedBox(height: 8),
+          TextButton.icon(
+            onPressed: () {
+              // Usually redirects to search/scanner
+              // You can add logic to switch tabs here if you pass a callback
+            },
+            icon: const Icon(Icons.add_circle_outline, color: Color(0xFF2C5F2D)),
+            label: const Text("Scan Meal", style: TextStyle(color: Color(0xFF2C5F2D))),
+          )
+        ],
+      ),
+    );
+  }
+
+  Widget _buildGrid() {
+    return GridView.builder(
+      padding: const EdgeInsets.all(16),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        childAspectRatio: 0.70,
+        crossAxisSpacing: 16,
+        mainAxisSpacing: 16,
+      ),
+      itemCount: _filteredItems.length,
+      itemBuilder: (context, index) {
+        final item = _filteredItems[index];
+        return _buildInventoryCard(item);
+      },
+    );
+  }
+
   Widget _buildInventoryCard(InventoryItem item) {
+    // Format time: "10:30 PM"
+    final timeString = DateFormat('h:mm a').format(item.timestamp);
+
     return GestureDetector(
       onTap: () => _navigateToProductDetails(context, item),
       child: Container(
@@ -241,7 +357,33 @@ class _InventoryPageState extends State<InventoryPage> {
                           )
                         : const Icon(Icons.fastfood, color: Colors.grey, size: 40),
                   ),
-                  // Grade Badge overlay
+                  // Time Badge (NEW)
+                  Positioned(
+                    top: 8,
+                    left: 8,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.6),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.access_time, color: Colors.white, size: 10),
+                          const SizedBox(width: 4),
+                          Text(
+                            timeString,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  // Grade Badge
                   Positioned(
                     top: 8,
                     right: 8,
@@ -294,7 +436,7 @@ class _InventoryPageState extends State<InventoryPage> {
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Text(
-                          item.tag.split(',').first, // Show only first tag to save space
+                          item.tag.split(',').first,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
