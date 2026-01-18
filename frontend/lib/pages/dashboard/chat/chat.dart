@@ -4,8 +4,15 @@ import 'package:frontend/pages/dashboard/chat/chatservice.dart';
 
 class ChatPage extends StatefulWidget {
   final VoidCallback onBack;
+  final String? initialProductContext;
+  final String? initialAiFeedback;
 
-  const ChatPage({super.key, required this.onBack});
+  const ChatPage({
+    super.key,
+    required this.onBack,
+    this.initialProductContext,
+    this.initialAiFeedback,
+  });
 
   @override
   State<ChatPage> createState() => _ChatPageState();
@@ -15,7 +22,7 @@ class _ChatPageState extends State<ChatPage> {
   final TextEditingController _controller = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   final ChatService _chatService = ChatService();
-  
+
   List<ChatMessage> _messages = [];
   bool _isLoadingHistory = true;
   bool _isSending = false;
@@ -32,6 +39,52 @@ class _ChatPageState extends State<ChatPage> {
       setState(() {
         _messages = history;
         _isLoadingHistory = false;
+      });
+
+      // If we have initial product context, send it as a message
+      if (widget.initialProductContext != null &&
+          widget.initialProductContext!.isNotEmpty) {
+        _sendProductContextMessage();
+      } else {
+        _scrollToBottom();
+      }
+    }
+  }
+
+  Future<void> _sendProductContextMessage() async {
+    final contextMessage =
+        "I just scanned a product: ${widget.initialProductContext}. "
+        "Your previous analysis was: ${widget.initialAiFeedback ?? 'Not available'}. "
+        "Can you tell me more about this product?";
+
+    setState(() {
+      _messages.add(
+        ChatMessage(
+          text: contextMessage,
+          isUser: true,
+          timestamp: DateTime.now(),
+        ),
+      );
+      _isSending = true;
+    });
+    _scrollToBottom();
+
+    final aiResponse = await _chatService.sendMessage(contextMessage);
+
+    if (mounted) {
+      setState(() {
+        _isSending = false;
+        if (aiResponse != null) {
+          _messages.add(aiResponse);
+        } else {
+          _messages.add(
+            ChatMessage(
+              text: "Failed to get response. Please try again.",
+              isUser: false,
+              timestamp: DateTime.now(),
+            ),
+          );
+        }
       });
       _scrollToBottom();
     }
@@ -56,11 +109,9 @@ class _ChatPageState extends State<ChatPage> {
 
     // 1. Add User Message Immediately (Optimistic UI)
     setState(() {
-      _messages.add(ChatMessage(
-        text: text, 
-        isUser: true, 
-        timestamp: DateTime.now()
-      ));
+      _messages.add(
+        ChatMessage(text: text, isUser: true, timestamp: DateTime.now()),
+      );
       _isSending = true;
     });
     _controller.clear();
@@ -76,11 +127,13 @@ class _ChatPageState extends State<ChatPage> {
           _messages.add(aiResponse);
         } else {
           // Error handling: Add a system error message locally
-          _messages.add(ChatMessage(
-            text: "Failed to get response. Please try again.",
-            isUser: false,
-            timestamp: DateTime.now(),
-          ));
+          _messages.add(
+            ChatMessage(
+              text: "Failed to get response. Please try again.",
+              isUser: false,
+              timestamp: DateTime.now(),
+            ),
+          );
         }
       });
       _scrollToBottom();
@@ -130,64 +183,81 @@ class _ChatPageState extends State<ChatPage> {
             ],
           ),
         ),
-        
+
         // --- Chat List ---
         Expanded(
           child: _isLoadingHistory
-              ? const Center(child: CircularProgressIndicator(color: Colors.green))
-              : _messages.isEmpty 
-                  ? Center(
-                      child: Text(
-                        "Ask me anything about your diet!",
-                        style: TextStyle(color: Colors.grey[400]),
-                      ),
-                    )
-                  : ListView.builder(
-                      controller: _scrollController,
-                      padding: const EdgeInsets.all(16),
-                      itemCount: _messages.length + (_isSending ? 1 : 0),
-                      itemBuilder: (context, index) {
-                        // Show a loading bubble if sending
-                        if (index == _messages.length) {
-                          return const Align(
-                            alignment: Alignment.centerLeft,
-                            child: Padding(
-                              padding: EdgeInsets.only(left: 16, bottom: 12),
-                              child: SizedBox(
-                                width: 20, height: 20,
-                                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.green),
-                              ),
-                            ),
-                          );
-                        }
-
-                        final msg = _messages[index];
-                        return Align(
-                          alignment: msg.isUser ? Alignment.centerRight : Alignment.centerLeft,
-                          child: Container(
-                            margin: const EdgeInsets.only(bottom: 12),
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                            constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
-                            decoration: BoxDecoration(
-                              color: msg.isUser ? Colors.green : Colors.grey[100],
-                              borderRadius: BorderRadius.only(
-                                topLeft: const Radius.circular(16),
-                                topRight: const Radius.circular(16),
-                                bottomLeft: msg.isUser ? const Radius.circular(16) : Radius.zero,
-                                bottomRight: msg.isUser ? Radius.zero : const Radius.circular(16),
-                              ),
-                            ),
-                            child: Text(
-                              msg.text,
-                              style: TextStyle(
-                                color: msg.isUser ? Colors.white : Colors.black87,
-                                fontSize: 14,
-                              ),
+              ? const Center(
+                  child: CircularProgressIndicator(color: Colors.green),
+                )
+              : _messages.isEmpty
+              ? Center(
+                  child: Text(
+                    "Ask me anything about your diet!",
+                    style: TextStyle(color: Colors.grey[400]),
+                  ),
+                )
+              : ListView.builder(
+                  controller: _scrollController,
+                  padding: const EdgeInsets.all(16),
+                  itemCount: _messages.length + (_isSending ? 1 : 0),
+                  itemBuilder: (context, index) {
+                    // Show a loading bubble if sending
+                    if (index == _messages.length) {
+                      return const Align(
+                        alignment: Alignment.centerLeft,
+                        child: Padding(
+                          padding: EdgeInsets.only(left: 16, bottom: 12),
+                          child: SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.green,
                             ),
                           ),
-                        );
-                      },
-                    ),
+                        ),
+                      );
+                    }
+
+                    final msg = _messages[index];
+                    return Align(
+                      alignment: msg.isUser
+                          ? Alignment.centerRight
+                          : Alignment.centerLeft,
+                      child: Container(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
+                        constraints: BoxConstraints(
+                          maxWidth: MediaQuery.of(context).size.width * 0.75,
+                        ),
+                        decoration: BoxDecoration(
+                          color: msg.isUser ? Colors.green : Colors.grey[100],
+                          borderRadius: BorderRadius.only(
+                            topLeft: const Radius.circular(16),
+                            topRight: const Radius.circular(16),
+                            bottomLeft: msg.isUser
+                                ? const Radius.circular(16)
+                                : Radius.zero,
+                            bottomRight: msg.isUser
+                                ? Radius.zero
+                                : const Radius.circular(16),
+                          ),
+                        ),
+                        child: Text(
+                          msg.text,
+                          style: TextStyle(
+                            color: msg.isUser ? Colors.white : Colors.black87,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
         ),
 
         // --- Input Area ---
@@ -200,7 +270,7 @@ class _ChatPageState extends State<ChatPage> {
                 color: Colors.black.withOpacity(0.05),
                 offset: const Offset(0, -2),
                 blurRadius: 10,
-              )
+              ),
             ],
           ),
           child: Row(
@@ -214,7 +284,10 @@ class _ChatPageState extends State<ChatPage> {
                     hintStyle: TextStyle(color: Colors.grey[400], fontSize: 14),
                     filled: true,
                     fillColor: Colors.grey[50],
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(24),
                       borderSide: BorderSide.none,
@@ -232,12 +305,16 @@ class _ChatPageState extends State<ChatPage> {
                     color: Colors.green,
                     shape: BoxShape.circle,
                   ),
-                  child: _isSending 
-                    ? const SizedBox(
-                        width: 20, height: 20,
-                        child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
-                      )
-                    : const Icon(Icons.send, color: Colors.white, size: 20),
+                  child: _isSending
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : const Icon(Icons.send, color: Colors.white, size: 20),
                 ),
               ),
             ],

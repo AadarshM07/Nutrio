@@ -170,11 +170,28 @@ class _CompareProductSelectionPageState
       _isLoading = true;
     });
 
-    // Convert OpenFoodFacts Product to our local Product model
+    // Try to get full product details with AI feedback from backend using barcode
+    final barcode = product.barcode;
+    if (barcode != null && barcode.isNotEmpty) {
+      final response = await _productService.getProductDetails(barcode);
+
+      if (!mounted) return;
+
+      setState(() {
+        _isLoading = false;
+      });
+
+      if (response.success && response.data != null) {
+        _navigateToComparison(response.data!);
+        return;
+      }
+    }
+
+    // Fallback: Convert OpenFoodFacts Product to our local Product model without AI feedback
     final localProduct = local.Product.fromOpenFoodFactsProduct(product);
     final productDetails = local.ProductDetailsResponse(
       product: localProduct,
-      aiFeedback: '',
+      aiFeedback: 'AI analysis not available for this product.',
     );
 
     setState(() {

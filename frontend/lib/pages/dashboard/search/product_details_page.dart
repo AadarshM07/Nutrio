@@ -4,6 +4,7 @@ import 'widgets/expandable_section.dart';
 import 'widgets/nutrition_widgets.dart';
 import 'compare_product_selection_page.dart';
 import 'services/inventory_service.dart';
+import '../chat/chat.dart';
 
 class ProductDetailsPage extends StatelessWidget {
   final ProductDetailsResponse productDetails;
@@ -191,7 +192,11 @@ class ProductDetailsPage extends StatelessWidget {
                   const SizedBox(height: 16),
 
                   // AI Feedback Card
-                  _buildAiFeedbackCard(productDetails.aiFeedback),
+                  _buildAiFeedbackCard(
+                    context,
+                    productDetails.aiFeedback,
+                    product.productName,
+                  ),
 
                   const SizedBox(height: 16),
 
@@ -309,7 +314,11 @@ class ProductDetailsPage extends StatelessWidget {
     );
   }
 
-  Widget _buildAiFeedbackCard(String feedback) {
+  Widget _buildAiFeedbackCard(
+    BuildContext context,
+    String feedback,
+    String productName,
+  ) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -343,12 +352,14 @@ class ProductDetailsPage extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 10),
-              const Text(
-                'AI Analysis',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
+              const Expanded(
+                child: Text(
+                  'AI Analysis',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ],
@@ -360,6 +371,47 @@ class ProductDetailsPage extends StatelessWidget {
               color: Colors.white,
               fontSize: 14,
               height: 1.5,
+            ),
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => Scaffold(
+                      body: SafeArea(
+                        child: ChatPage(
+                          onBack: () => Navigator.pop(context),
+                          initialProductContext: productName,
+                          initialAiFeedback: feedback,
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+              icon: const Icon(
+                Icons.chat_bubble_outline,
+                color: Colors.white,
+                size: 18,
+              ),
+              label: const Text(
+                'Continue in Chat',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              style: OutlinedButton.styleFrom(
+                side: const BorderSide(color: Colors.white70),
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
             ),
           ),
         ],
