@@ -2,12 +2,12 @@ import 'dart:convert';
 import 'package:frontend/pages/dashboard/home/dashboard_model.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../constants/constants.dart'; // Ensure this points to your API URL
+import '../../constants/constants.dart';    
 
 class DashboardService {
   static const String _cacheKey = 'dashboard_analysis_cache';
 
-  /// 1. Try to get data from Local Cache (Offline/Fast Load)
+     
   Future<AnalysisData?> getCachedAnalysis() async {
     final prefs = await SharedPreferences.getInstance();
     final jsonString = prefs.getString(_cacheKey);
@@ -24,8 +24,8 @@ class DashboardService {
     return null;
   }
 
-  /// 2. Fetch fresh data from API and save to Cache
-  /// Renamed to match your UI call: fetchDashboardStats
+     
+     
   Future<AnalysisData?> fetchDashboardStats(String timeline) async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('auth_token');
@@ -47,7 +47,7 @@ class DashboardService {
         final data = json.decode(response.body);
         final analysis = AnalysisData.fromJson(data);
         
-        // SAVE TO CACHE
+           
         await prefs.setString(_cacheKey, json.encode(analysis.toJson()));
         
         return analysis;

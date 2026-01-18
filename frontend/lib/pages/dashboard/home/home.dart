@@ -16,7 +16,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  // Brand Colors
+     
   final Color primaryTeal = const Color(0xFF29A38F);
   final Color darkGreen = const Color(0xFF0EAD69);
   final Color bgGrey = const Color(0xFFF8F9FA);
@@ -33,26 +33,26 @@ class _HomePageState extends State<HomePage> {
     _initialLoad();
   }
 
-  /// Load User Profile + Cached Dashboard Data
+     
   Future<void> _initialLoad() async {
     setState(() => _isLoading = true);
 
-    // 1. Get User info (for BMI)
+       
     final userResponse = await AuthService().validateToken();
     
-    // 2. Check Cache for previous Analysis
+       
     final cachedData = await _service.getCachedAnalysis();
 
     if (mounted) {
       setState(() {
         _user = userResponse.user;
-        _analysisData = cachedData; // Populates dashboard if cache exists
+        _analysisData = cachedData;    
         _isLoading = false;
       });
     }
   }
 
-  /// Fetch Fresh Data from API (Triggered by Button or Timeline change)
+     
   Future<void> _runAnalysis() async {
     setState(() => _isLoading = true);
     
@@ -88,21 +88,21 @@ class _HomePageState extends State<HomePage> {
             _buildHeader(),
             const SizedBox(height: 24),
 
-            // --- 1. HEALTH METRICS (Always Visible) ---
+               
             _buildSectionHeader("HEALTH METRICS"),
             const SizedBox(height: 12),
             _buildHealthMetricsCard(),
             const SizedBox(height: 24),
 
-            // --- 2. AI PREDICTION SECTION ---
+               
             if (_isLoading)
               _buildLoadingState()
             else if (_analysisData == null)
-              _buildEmptyState() // Shows "Analyze Now" button if no cache
+              _buildEmptyState()    
             else
-              _buildDashboardContent(), // Shows Graphs & Data
+              _buildDashboardContent(),    
 
-            // --- 3. RECOMMENDED PRODUCTS ---
+               
             const SizedBox(height: 24),
             _buildSectionHeader("RECOMMENDED PRODUCTS"),
             const SizedBox(height: 12),
@@ -114,7 +114,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // --- WIDGETS ---
+     
 
   Widget _buildEmptyState() {
     return Container(
@@ -185,7 +185,7 @@ class _HomePageState extends State<HomePage> {
   Widget _buildDashboardContent() {
     return Column(
       children: [
-        // Header with Refresh
+           
         Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
@@ -204,11 +204,11 @@ class _HomePageState extends State<HomePage> {
         ),
         const SizedBox(height: 8),
 
-        // Health Trajectory Graph
+           
         _buildTrajectoryCard(),
         const SizedBox(height: 24),
 
-        // Neuro-Somatic Impact
+           
         _buildSectionHeader("NEURO-SOMATIC IMPACT"),
         const SizedBox(height: 12),
         Row(
@@ -220,13 +220,13 @@ class _HomePageState extends State<HomePage> {
         ),
         const SizedBox(height: 24),
 
-        // Nutrients
+           
         _buildSectionHeader("NUTRIENTS OF CONCERN"),
         const SizedBox(height: 12),
         _buildNutrientList(),
         const SizedBox(height: 24),
 
-        // Recommendation
+           
         _buildRecommendationCard(),
       ],
     );
@@ -254,7 +254,7 @@ class _HomePageState extends State<HomePage> {
                 child: GestureDetector(
                   onTap: () {
                     setState(() => _selectedTimeline = time);
-                    // Automatically run analysis if data exists, otherwise wait for button press
+                       
                     if (_analysisData != null) {
                       _runAnalysis();
                     }
@@ -284,7 +284,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // --- TRAJECTORY CARD ---
+     
   Widget _buildTrajectoryCard() {
     final score = _analysisData!.healthScore;
     final spots = [
@@ -368,7 +368,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // --- IMPACT CARDS ---
+     
   Widget _buildImpactCard(String title, ImpactAnalysis data, IconData icon, Color accentColor) {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -405,7 +405,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // --- NUTRIENT LIST ---
+     
   Widget _buildNutrientList() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -492,7 +492,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // --- HEALTH METRICS (BMI CARD) ---
+     
   Widget _buildHealthMetricsCard() {
     double bmi = _calculateBMI();
     String bmiText = bmi > 0 ? bmi.toStringAsFixed(1) : "--";
@@ -546,7 +546,7 @@ class _HomePageState extends State<HomePage> {
             ],
           ),
           const SizedBox(height: 10),
-          // Simple visual slider for BMI
+             
           ClipRRect(
             borderRadius: BorderRadius.circular(4),
             child: LinearProgressIndicator(

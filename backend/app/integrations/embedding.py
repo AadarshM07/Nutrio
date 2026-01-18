@@ -14,7 +14,7 @@ def create_documents(path):
     for item in data:
         parts = []
 
-        # (Your existing text building logic remains the same)
+           
         if item.get("guideline"):
             parts.append(f"Guideline: {item['guideline']}")
         if item.get("condition"):
@@ -33,13 +33,13 @@ def create_documents(path):
         text = ". ".join(parts) + "."
         documents.append(text)
 
-        # --- FIX IS HERE ---
-        # ChromaDB crashes on None, so we default to empty strings ""
+           
+           
         metadatas.append({
             "condition": item.get("condition", ""),
             "category": item.get("category", ""),
-            "gender": item.get("gender", "both"), # Default to 'both' if missing
-            "unit": item.get("unit", ""),         # Default to empty string
+            "gender": item.get("gender", "both"),    
+            "unit": item.get("unit", ""),            
             "source": item.get("source", "")
         })
 

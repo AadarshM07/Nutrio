@@ -19,7 +19,7 @@ class NutritionAnalyzer:
         self.memory = ShortTermMemory(max_turns=6)
         
     def analyze(self, gender,goals,allergies, disease,nutrition_text, user_query, n_results=5, ask_qs = True):
-        # Store user query in short-term memory
+           
         self.memory.add("user", user_query)
         search_query = (
             f"{user_query}. "
@@ -70,9 +70,9 @@ class NutritionAnalyzer:
 
             Be empathetic, clear, and actionable in your response. Dont make it long try to keep it under 60 words."""
 
-        # Retry logic with exponential backoff for handling 503 errors
+           
         max_retries = 3
-        retry_delay = 2  # Start with 2 seconds
+        retry_delay = 2     
         
         for attempt in range(max_retries):
             try:
@@ -80,7 +80,7 @@ class NutritionAnalyzer:
                     model='gemini-2.5-flash',
                     contents=system_prompt
                 )
-                # Store assistant response in memory
+                   
                 self.memory.add("assistant", response.text)
 
                 
@@ -91,10 +91,10 @@ class NutritionAnalyzer:
                     'nutrition_summary': nutrition_text
                 }
             except ServerError as e:
-                # Check if it's a 503 error (overloaded)
+                   
                 if '503' in str(e) or 'overloaded' in str(e).lower():
                     if attempt < max_retries - 1:
-                        wait_time = retry_delay * (2 ** attempt)  # Exponential backoff
+                        wait_time = retry_delay * (2 ** attempt)     
                         print(f"Model overloaded. Retrying in {wait_time} seconds... (Attempt {attempt + 1}/{max_retries})")
                         time.sleep(wait_time)
                         continue
@@ -106,7 +106,7 @@ class NutritionAnalyzer:
                             'message': "The AI service is currently experiencing high load. Please try again in a few moments."
                         }
                 else:
-                    # For other server errors, don't retry
+                       
                     print(f"DEBUG - Server error occurred: {str(e)}")
                     return {
                         'success': False,
@@ -128,11 +128,11 @@ class NutritionAnalyzer:
         """
         Analyzes a chat message using RAG context + Database History.
         """
-        # Initialize the analyzer to access the vector DB
+           
         analyzer = NutritionAnalyzer(db_name="disease-guidelines")
         
-        # 1. Get RAG Context for the *current* specific question
-        # We construct a search query that includes user context
+           
+           
         search_query = (
             f"{user_message}. "
             f"User has {user_profile.get('disease', 'no conditions')} "
@@ -147,7 +147,7 @@ class NutritionAnalyzer:
             for i, g in enumerate(relevant_guidelines, 1):
                 guidelines_text += f"{i}. {g['content']}\n"
         
-        # 2. Construct the Prompt with History
+           
         system_prompt = f"""You are a friendly and knowledgeable Nutrition Assistant at Nutrio.
         
         User Profile:
@@ -168,7 +168,7 @@ class NutritionAnalyzer:
         Keep the tone encouraging, concise (under 80 words), and safe. 
         If you don't know something, admit it politely."""
 
-        # 3. Call Gemini
+           
         try:
             response = client.models.generate_content(
                 model='gemini-2.5-flash',
@@ -189,7 +189,7 @@ class NutritionAnalyzer:
         Analyzes the user's entire inventory by processing the detailed 'product_data' 
         of each item to predict long-term health outcomes.
         """
-        # 1. Prepare Inventory Text with detailed Product Data
+           
         if not inventory_items:
             return {
                 "health_score": 0,
@@ -199,16 +199,16 @@ class NutritionAnalyzer:
                 "nutrients_of_concern": []
             }
 
-        # Build a comprehensive context string from the inventory list
+           
         inventory_context = "User's Current Dietary Intake (based on Inventory Data):\n"
         
         for item in inventory_items:
-            # We access the specific fields defined in your SQLModel/Pydantic schema
+               
             title = getattr(item, 'title', 'Unknown Product')
             score = getattr(item, 'nutrient_score', 'N/A')
             
-            # Access the raw string data stored in the database
-            # We truncate it to 300 chars per item to avoid token overflow if the list is huge
+               
+               
             raw_data = getattr(item, 'product_data', '')[:300] 
             
             inventory_context += f"""
@@ -217,10 +217,10 @@ class NutritionAnalyzer:
               Details: {raw_data}
             """
 
-        # 2. Get RAG Context (Mechanisms of Action)
+           
         disease = user_profile.get('disease', 'General Health')
         
-        # Search for specific biological mechanisms related to the user's condition
+           
         search_query = (
             f"Physiological and psychological effects of diet on {disease}. "
             f"Mechanisms linking processed food, sugar, and additives to mood and brain structure."
@@ -234,7 +234,7 @@ class NutritionAnalyzer:
             for p in relevant_passages:
                 clinical_context += f"- {p['content']}\n"
 
-        # 3. Construct the Predictive Prompt
+           
         system_prompt = f"""
         You are Nutrio's Medical Prediction Engine.
         Your task is to analyze the user's *actual* food consumption data to predict their future health trajectory.
@@ -306,7 +306,7 @@ class NutritionAnalyzer:
 def analyze_nutrition(nutrition:dict,disease:str,gender:str='male',goals:str='none',allergies:str='none') -> str:
     analyzer = NutritionAnalyzer(db_name="disease-guidelines")
     result = analyzer.analyze(
-        gender=gender,  #TODO
+        gender=gender,     
         disease=disease,
         goals=goals,
         allergies=allergies,
@@ -343,7 +343,7 @@ def compare_products(
 
     analyzer = NutritionAnalyzer(db_name="disease-guidelines")
 
-    # --- Minimal guideline (optional, short) ---
+       
     guidelines_text = ""
     if disease and disease.lower() != "none":
         guidelines = get_relevant_passages(
@@ -354,7 +354,7 @@ def compare_products(
         if guidelines:
             guidelines_text = f"Guideline: {guidelines[0]['content'][:120]}"
 
-    # --- Compact product data ---
+       
     def compact(p: dict) -> dict:
         n = p.get("nutriments", {})
         return {
@@ -374,7 +374,7 @@ def compare_products(
     name1 = p1.get("name", "Product 1")
     name2 = p2.get("name", "Product 2")
 
-    # --- STRICT minimal-output prompt ---
+       
     system_prompt = f"""
 You are Nutrio’s nutrition comparison engine.
 

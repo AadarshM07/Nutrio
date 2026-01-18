@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/pages/dashboard/chat/chatservice.dart';
-// Import the service
+   
 
 class ChatPage extends StatefulWidget {
   final VoidCallback onBack;
@@ -41,7 +41,7 @@ class _ChatPageState extends State<ChatPage> {
         _isLoadingHistory = false;
       });
 
-      // If we have initial product context, send it as a message
+         
       if (widget.initialProductContext != null &&
           widget.initialProductContext!.isNotEmpty) {
         _sendProductContextMessage();
@@ -91,7 +91,7 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   void _scrollToBottom() {
-    // Small delay to ensure list is rendered before scrolling
+       
     Future.delayed(const Duration(milliseconds: 100), () {
       if (_scrollController.hasClients) {
         _scrollController.animateTo(
@@ -107,7 +107,7 @@ class _ChatPageState extends State<ChatPage> {
     final text = _controller.text.trim();
     if (text.isEmpty || _isSending) return;
 
-    // 1. Add User Message Immediately (Optimistic UI)
+       
     setState(() {
       _messages.add(
         ChatMessage(text: text, isUser: true, timestamp: DateTime.now()),
@@ -117,7 +117,7 @@ class _ChatPageState extends State<ChatPage> {
     _controller.clear();
     _scrollToBottom();
 
-    // 2. Send to Backend
+       
     final aiResponse = await _chatService.sendMessage(text);
 
     if (mounted) {
@@ -126,7 +126,7 @@ class _ChatPageState extends State<ChatPage> {
         if (aiResponse != null) {
           _messages.add(aiResponse);
         } else {
-          // Error handling: Add a system error message locally
+             
           _messages.add(
             ChatMessage(
               text: "Failed to get response. Please try again.",
@@ -144,7 +144,7 @@ class _ChatPageState extends State<ChatPage> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        // --- Header ---
+           
         Container(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
           decoration: BoxDecoration(
@@ -184,7 +184,7 @@ class _ChatPageState extends State<ChatPage> {
           ),
         ),
 
-        // --- Chat List ---
+           
         Expanded(
           child: _isLoadingHistory
               ? const Center(
@@ -202,7 +202,7 @@ class _ChatPageState extends State<ChatPage> {
                   padding: const EdgeInsets.all(16),
                   itemCount: _messages.length + (_isSending ? 1 : 0),
                   itemBuilder: (context, index) {
-                    // Show a loading bubble if sending
+                       
                     if (index == _messages.length) {
                       return const Align(
                         alignment: Alignment.centerLeft,
@@ -260,7 +260,7 @@ class _ChatPageState extends State<ChatPage> {
                 ),
         ),
 
-        // --- Input Area ---
+           
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
@@ -293,7 +293,7 @@ class _ChatPageState extends State<ChatPage> {
                       borderSide: BorderSide.none,
                     ),
                   ),
-                  onSubmitted: (_) => _sendMessage(), // Send on Enter
+                  onSubmitted: (_) => _sendMessage(),    
                 ),
               ),
               const SizedBox(width: 8),

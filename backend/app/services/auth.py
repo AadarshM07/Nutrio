@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 import bcrypt
 import os
 
-# SQLModel specific imports
+   
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
@@ -15,12 +15,12 @@ from app.schemas.auth import RegisterRequest, LoginRequest, UserResponse, Token,
 
 router = APIRouter()
 
-# SECURITY WARNING: Move this to an environment variable in production
+   
 SECRET_KEY = os.environ.get("SECRET_KEY", "super_secret_key_default") 
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 3000000
 
-# --- Helper Functions ---
+   
 def create_access_token(data: dict, expires_delta: timedelta | None = None):
     to_encode = data.copy()
     if expires_delta:
@@ -39,11 +39,11 @@ def get_password_hash(password):
     return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
 
-# --- Routes ---
+   
 
 @router.post("/register/", response_model=UserResponse, status_code=201)
 async def register_user(request: RegisterRequest, db: AsyncSession = Depends(get_session)):
-    # Async query using select()
+       
     statement = select(User).where(User.email == request.email)
     result = await db.exec(statement)
     existing_user = result.first()
@@ -67,7 +67,7 @@ async def register_user(request: RegisterRequest, db: AsyncSession = Depends(get
 
 @router.post("/login/", response_model=Token)
 async def login(request: LoginRequest, db: AsyncSession = Depends(get_session)):
-    # Async query
+       
     statement = select(User).where(User.email == request.email)
     result = await db.exec(statement)
     user = result.first()
@@ -81,9 +81,9 @@ async def login(request: LoginRequest, db: AsyncSession = Depends(get_session)):
         "token_type": "bearer",
     }
 
-# --- Dependencies for Protected Routes ---
+   
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login") # Note the URL path
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")    
 
 async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession = Depends(get_session)):
     credentials_exception = HTTPException(
@@ -99,7 +99,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession
     except JWTError:
         raise credentials_exception
     
-    # Async query to get user by ID
+       
     statement = select(User).where(User.id == int(user_id))
     result = await db.exec(statement)
     user = result.first()
@@ -112,7 +112,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession
 @router.post("/submit-survey/", response_model=UserResponse)
 async def submit_survey(
     survey_data: SurveyRequest,
-    current_user: User = Depends(get_current_user), # Handles Auth
+    current_user: User = Depends(get_current_user),    
     db: AsyncSession = Depends(get_session)
 ):
     """
@@ -120,7 +120,7 @@ async def submit_survey(
     Only updates fields that are actually provided (not None).
     """
     
-    # Update fields if they are provided in the request
+       
     if survey_data.weight is not None:
         current_user.weight = survey_data.weight
     if survey_data.height is not None:

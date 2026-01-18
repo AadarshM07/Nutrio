@@ -46,27 +46,27 @@ class ComparisonResultPage extends StatelessWidget {
 
             const SizedBox(height: 16),
 
-            // Verdict Card
+              
             _buildVerdictCard(verdict),
 
             const SizedBox(height: 16),
 
-            // Product Comparison Cards
+              
             _buildProductComparisonSection(comparison),
 
             const SizedBox(height: 16),
 
-            // Key Factors
+              
             _buildKeyFactorsCard(keyFactors),
 
             const SizedBox(height: 16),
 
-            // Recommendation
+              
             _buildRecommendationCard(recommendation),
 
             const SizedBox(height: 24),
 
-            // Navigation Buttons
+              
             _buildNavigationButtons(
               context,
               winnerProduct,
@@ -510,7 +510,7 @@ class ComparisonResultPage extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // Winner button - Primary
+          
         ElevatedButton.icon(
           onPressed: () {
             Navigator.push(
@@ -533,7 +533,7 @@ class ComparisonResultPage extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 12),
-        // Loser button - Secondary
+          
         OutlinedButton.icon(
           onPressed: () {
             Navigator.push(

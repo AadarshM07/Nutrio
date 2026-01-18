@@ -16,7 +16,7 @@ class ChatMessage {
 }
 
 class ChatService {
-  // Singleton pattern (optional, but good for services)
+     
   static final ChatService _instance = ChatService._internal();
   factory ChatService() => _instance;
   ChatService._internal();
@@ -26,7 +26,7 @@ class ChatService {
     return prefs.getString('auth_token');
   }
 
-  // --- Send Message ---
+     
   Future<ChatMessage?> sendMessage(String message) async {
     final token = await _getToken();
     if (token == null) return null;
@@ -37,14 +37,14 @@ class ChatService {
         url,
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token', // Standard Auth Header
+          'Authorization': 'Bearer $token',    
         },
         body: json.encode({'message': message}),
       );
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        // Return the AI's response as a ChatMessage
+           
         return ChatMessage(
           text: data['response'],
           isUser: false,
@@ -60,7 +60,7 @@ class ChatService {
     }
   }
 
-  // --- Get History ---
+     
   Future<List<ChatMessage>> getHistory() async {
     final token = await _getToken();
     if (token == null) return [];
@@ -79,19 +79,19 @@ class ChatService {
         final List<dynamic> data = json.decode(response.body);
         final List<ChatMessage> history = [];
 
-        // The backend returns interactions containing BOTH message and response
-        // We need to flatten this into a linear chat list
+           
+           
         for (var item in data) {
           final time = DateTime.parse(item['timestamp']);
           
-          // 1. Add User's Message
+             
           history.add(ChatMessage(
             text: item['message'],
             isUser: true,
             timestamp: time,
           ));
 
-          // 2. Add AI's Response (slightly after, logically)
+             
           history.add(ChatMessage(
             text: item['response'],
             isUser: false,

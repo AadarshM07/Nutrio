@@ -38,11 +38,11 @@ class _CompareProductSelectionPageState
       _isLoading = true;
     });
 
-    // Determine if the query is a barcode (numeric) or text search
+       
     final isBarcode = RegExp(r'^[0-9]+$').hasMatch(_searchQuery);
 
     if (isBarcode) {
-      // Barcode search - get single product from backend
+         
       final response = await _productService.getProductDetails(_searchQuery);
 
       setState(() {
@@ -52,10 +52,10 @@ class _CompareProductSelectionPageState
       if (!mounted) return;
 
       if (response.success && response.data != null) {
-        // Navigate to comparison page with both products
+           
         _navigateToComparison(response.data!);
       } else {
-        // Show not found page
+           
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -65,7 +65,7 @@ class _CompareProductSelectionPageState
         );
       }
     } else {
-      // Text search - get multiple products
+         
       final results = await _productService.searchProducts(_searchQuery);
 
       setState(() {
@@ -101,7 +101,7 @@ class _CompareProductSelectionPageState
   }
 
   void _navigateToComparison(local.ProductDetailsResponse secondProduct) async {
-    // Show loading indicator
+       
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -132,7 +132,7 @@ class _CompareProductSelectionPageState
       );
 
       if (!mounted) return;
-      Navigator.pop(context); // Close loading dialog
+      Navigator.pop(context);    
 
       if (comparisonResult != null) {
         Navigator.push(
@@ -155,7 +155,7 @@ class _CompareProductSelectionPageState
       }
     } catch (e) {
       if (!mounted) return;
-      Navigator.pop(context); // Close loading dialog
+      Navigator.pop(context);    
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Error: ${e.toString().replaceAll('Exception: ', '')}'),
@@ -170,7 +170,7 @@ class _CompareProductSelectionPageState
       _isLoading = true;
     });
 
-    // Try to get full product details with AI feedback from backend using barcode
+       
     final barcode = product.barcode;
     if (barcode != null && barcode.isNotEmpty) {
       final response = await _productService.getProductDetails(barcode);
@@ -187,7 +187,7 @@ class _CompareProductSelectionPageState
       }
     }
 
-    // Fallback: Convert OpenFoodFacts Product to our local Product model without AI feedback
+       
     final localProduct = local.Product.fromOpenFoodFactsProduct(product);
     final productDetails = local.ProductDetailsResponse(
       product: localProduct,
@@ -262,13 +262,13 @@ class _CompareProductSelectionPageState
       ),
       body: Column(
         children: [
-          // Currently selected product banner
+             
           Container(
             color: const Color(0xFF2C5F2D),
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
             child: Column(
               children: [
-                // Current product info
+                   
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
@@ -334,7 +334,7 @@ class _CompareProductSelectionPageState
                   ),
                 ),
                 const SizedBox(height: 16),
-                // Search bar with camera icon
+                   
                 Container(
                   decoration: BoxDecoration(
                     color: Colors.white,
@@ -373,7 +373,7 @@ class _CompareProductSelectionPageState
                           ),
                         ),
                       ),
-                      // Camera icon button
+                         
                       Padding(
                         padding: const EdgeInsets.all(4.0),
                         child: InkWell(
@@ -393,7 +393,7 @@ class _CompareProductSelectionPageState
                           ),
                         ),
                       ),
-                      // Search button
+                         
                       Padding(
                         padding: const EdgeInsets.all(4.0),
                         child: InkWell(
@@ -428,7 +428,7 @@ class _CompareProductSelectionPageState
               ],
             ),
           ),
-          // Results count
+             
           if (_products.isNotEmpty)
             Container(
               padding: const EdgeInsets.all(16),
@@ -441,7 +441,7 @@ class _CompareProductSelectionPageState
                 ),
               ),
             ),
-          // Grid view
+             
           Expanded(
             child: _isLoading
                 ? const Center(
@@ -508,7 +508,7 @@ class _CompareProductSelectionPageState
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              // Product Image
+                                 
                               Expanded(
                                 flex: 3,
                                 child: ClipRRect(
@@ -543,7 +543,7 @@ class _CompareProductSelectionPageState
                                         ),
                                 ),
                               ),
-                              // Product Info
+                                 
                               Expanded(
                                 flex: 2,
                                 child: Padding(
@@ -552,7 +552,7 @@ class _CompareProductSelectionPageState
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      // Product Name
+                                         
                                       Text(
                                         product.productName ??
                                             'Unknown Product',
@@ -566,7 +566,7 @@ class _CompareProductSelectionPageState
                                         ),
                                       ),
                                       const Spacer(),
-                                      // Nutrition Grade Badge
+                                         
                                       if (nutritionGrade != 'N/A')
                                         Container(
                                           padding: const EdgeInsets.symmetric(

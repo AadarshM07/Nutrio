@@ -2,9 +2,9 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:intl/intl.dart'; // Import intl for date formatting
+import 'package:intl/intl.dart';  
 
-// Import your existing constants and pages
+ 
 import 'package:frontend/pages/constants/constants.dart';
 import 'package:frontend/pages/dashboard/search/models/product_model.dart';
 import 'package:frontend/pages/dashboard/search/product_details_page.dart';
@@ -17,7 +17,7 @@ class InventoryItem {
   final String nutrientScore;
   final String productData;
   final String aiFeedback;
-  final DateTime timestamp; // Added Timestamp
+  final DateTime timestamp;  
 
   InventoryItem({
     required this.barcode,
@@ -39,7 +39,7 @@ class InventoryItem {
       nutrientScore: json['nutrient_score'] ?? '?',
       productData: json['product_data'] ?? "{}",
       aiFeedback: json['ai_feedback'] ?? "No feedback available.",
-      // Parse the timestamp from backend (ISO 8601 string)
+       
       timestamp: json['timestamp'] != null 
           ? DateTime.parse(json['timestamp']).toLocal() 
           : DateTime.now(), 
@@ -55,9 +55,9 @@ class InventoryPage extends StatefulWidget {
 }
 
 class _InventoryPageState extends State<InventoryPage> {
-  // All items fetched from API
+   
   List<InventoryItem> _allItems = [];
-  // Items to display based on selected date
+   
   List<InventoryItem> _filteredItems = [];
   
   bool _isLoading = true;
@@ -90,7 +90,7 @@ class _InventoryPageState extends State<InventoryPage> {
         if (mounted) {
           setState(() {
             _allItems = data.map((e) => InventoryItem.fromJson(e)).toList();
-            // Sort by time descending (newest first)
+             
             _allItems.sort((a, b) => b.timestamp.compareTo(a.timestamp));
             _filterItemsByDate();
             _isLoading = false;
@@ -106,7 +106,7 @@ class _InventoryPageState extends State<InventoryPage> {
     }
   }
 
-  // Filter the master list based on _selectedDate
+   
   void _filterItemsByDate() {
     setState(() {
       _filteredItems = _allItems.where((item) {
@@ -165,12 +165,12 @@ class _InventoryPageState extends State<InventoryPage> {
       backgroundColor: Colors.white,
       body: Column(
         children: [
-          // 1. Date Selector Strip
+           
           _buildDateSelector(),
           
           const Divider(height: 1),
 
-          // 2. Content Grid
+           
           Expanded(
             child: _isLoading 
               ? const Center(child: CircularProgressIndicator(color: Color(0xFF2C5F2D)))
@@ -190,15 +190,15 @@ class _InventoryPageState extends State<InventoryPage> {
       padding: const EdgeInsets.symmetric(vertical: 10),
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
-        // Show 30 days back and 2 days forward
+         
         itemCount: 33, 
-        reverse: true, // Start from today/future
+        reverse: true,  
         padding: const EdgeInsets.symmetric(horizontal: 10),
         itemBuilder: (context, index) {
-          // Logic to generate dates (Today is at index 2 if reverse is true? No, let's keep it simple)
-          // Let's generate dates starting from Today - 30 days up to Today
-          // Actually, easier logic: Start at Today and go backwards?
-          // Let's do: Index 0 = Today + 2 days (Future), Index 32 = 30 days ago.
+           
+           
+           
+           
           
           final date = DateTime.now().subtract(Duration(days: index - 2)); 
           
@@ -229,7 +229,7 @@ class _InventoryPageState extends State<InventoryPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    DateFormat('E').format(date), // Day name (Mon, Tue)
+                    DateFormat('E').format(date),  
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
@@ -285,8 +285,8 @@ class _InventoryPageState extends State<InventoryPage> {
           const SizedBox(height: 8),
           TextButton.icon(
             onPressed: () {
-              // Usually redirects to search/scanner
-              // You can add logic to switch tabs here if you pass a callback
+               
+               
             },
             icon: const Icon(Icons.add_circle_outline, color: Color(0xFF2C5F2D)),
             label: const Text("Scan Meal", style: TextStyle(color: Color(0xFF2C5F2D))),
@@ -314,7 +314,7 @@ class _InventoryPageState extends State<InventoryPage> {
   }
 
   Widget _buildInventoryCard(InventoryItem item) {
-    // Format time: "10:30 PM"
+     
     final timeString = DateFormat('h:mm a').format(item.timestamp);
 
     return GestureDetector(
@@ -334,7 +334,7 @@ class _InventoryPageState extends State<InventoryPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Image Section
+             
             Expanded(
               flex: 3,
               child: Stack(
@@ -357,7 +357,7 @@ class _InventoryPageState extends State<InventoryPage> {
                           )
                         : const Icon(Icons.fastfood, color: Colors.grey, size: 40),
                   ),
-                  // Time Badge (NEW)
+                   
                   Positioned(
                     top: 8,
                     left: 8,
@@ -383,7 +383,7 @@ class _InventoryPageState extends State<InventoryPage> {
                       ),
                     ),
                   ),
-                  // Grade Badge
+                   
                   Positioned(
                     top: 8,
                     right: 8,
@@ -407,7 +407,7 @@ class _InventoryPageState extends State<InventoryPage> {
               ),
             ),
             
-            // Details Section
+             
             Expanded(
               flex: 2,
               child: Padding(

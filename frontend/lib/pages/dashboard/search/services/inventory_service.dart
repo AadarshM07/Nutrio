@@ -12,7 +12,7 @@ class InventoryService {
     ProductDetailsResponse productDetails,
   ) async {
     try {
-      // Get JWT token
+         
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token');
 
@@ -22,7 +22,7 @@ class InventoryService {
 
       final product = productDetails.product;
 
-      // Prepare product data as JSON string
+         
       final productDataMap = {
         'categories': product.categories,
         'categories_tags': product.categoriesTags,
@@ -59,7 +59,7 @@ class InventoryService {
         'serving_size': product.servingSize,
       };
 
-      // Get first 3 categories as tag
+         
       final categoriesList = product.categories
           .split(',')
           .take(3)
@@ -67,7 +67,7 @@ class InventoryService {
           .toList();
       final tag = categoriesList.join(', ');
 
-      // Prepare request body
+         
       final requestBody = {
         'barcode': product.code,
         'title': product.productName,
@@ -78,7 +78,7 @@ class InventoryService {
         'ai_feedback': productDetails.aiFeedback,
       };
 
-      // Make API call
+         
       final response = await http.post(
         Uri.parse('$apiURL/inv/add/'),
         headers: {

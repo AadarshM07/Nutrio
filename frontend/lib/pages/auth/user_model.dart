@@ -8,7 +8,7 @@ class User {
   final String? healthIssues;
   final String? dietaryPreferences;
   final String? goals;
-  final String? healthDetails; // NEW FIELD
+  final String? healthDetails;    
 
   User({
     required this.id,
@@ -36,7 +36,7 @@ class User {
       healthIssues: json['health_issues'],
       dietaryPreferences: json['dietary_preferences'],
       goals: json['goals'],
-      healthDetails: json['health_details'], // Parse new field
+      healthDetails: json['health_details'],    
     );
   }
 

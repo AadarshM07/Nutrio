@@ -4,7 +4,7 @@ import 'dart:ui';
 import 'home/home.dart';
 import 'search/search.dart';
 import 'profile/profile.dart';
-import 'inventory/inventory_page.dart'; // Import the new page
+import 'inventory/inventory_page.dart';    
 
 class Dashboard extends StatefulWidget {
   const Dashboard({super.key});
@@ -36,7 +36,7 @@ class _DashboardState extends State<Dashboard> {
     });
   }
 
-  // ... (Keep _buildTopBar exactly as is) ...
+     
   Widget _buildTopBar() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -147,7 +147,7 @@ class _DashboardState extends State<Dashboard> {
                   activeIcon: Icon(Icons.search),
                   label: 'Search',
                 ),
-                // NEW INVENTORY ITEM
+                   
                 BottomNavigationBarItem(
                   icon: Icon(Icons.inventory_2_outlined),
                   activeIcon: Icon(Icons.inventory_2),
@@ -173,7 +173,7 @@ class _DashboardState extends State<Dashboard> {
       case 1:
         return const SearchPage();
       case 2:
-        return const InventoryPage(); // The new page
+        return const InventoryPage();    
       case 3:
         return const ProfilePage();
       default:

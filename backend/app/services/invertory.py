@@ -4,7 +4,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 from typing import List
 from app.schemas.inventory import InventoryAddRequest
 
-# Import your models and dependencies
+   
 from app.models import User, Inventory
 from app.database import get_session
 from app.services.auth import get_current_user 
@@ -38,8 +38,8 @@ async def add_to_inventory(
     """
     Add a new product to the user's inventory.
     """
-    # Optional: Check if item already exists for this user to prevent duplicates
-    # (If your model enforces unique barcode globally, this might fail for different users)
+       
+       
     statement = select(Inventory).where(
         Inventory.user_id == current_user.id, 
         Inventory.barcode == item_data.barcode
@@ -53,7 +53,7 @@ async def add_to_inventory(
             detail="Product already exists in your inventory."
         )
 
-    # Create new inventory item
+       
     new_item = Inventory(
         user_id=current_user.id,
         barcode=item_data.barcode,
@@ -72,8 +72,8 @@ async def add_to_inventory(
         return new_item
     except Exception as e:
         await db.rollback()
-        # This usually happens if the barcode is a Primary Key and another user has already added it.
-        # Ideally, 'barcode' should not be the only Primary Key if multiple users can own the same item.
+           
+           
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Could not add item. It might already exist in the system. Error: {str(e)}"

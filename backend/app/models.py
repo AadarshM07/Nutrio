@@ -6,9 +6,9 @@ class User(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     email: str = Field(index=True, unique=True)
     name: str 
-    password_hash: str # Renamed from 'password' to store the hash, not plain text
+    password_hash: str    
     gender: Optional[str] = None
-    # Optional profile fields
+       
     health_issues: Optional[str] = None
     dietary_preferences: Optional[str] = None
     goals: Optional[str] = None
@@ -33,8 +33,8 @@ class Inventory(SQLModel, table=True):
     img: str
     tag: str
     nutrient_score: str
-    product_data: str  # JSON string of full product data
-    ai_feedback: str  # AI analysis/recommendation
+    product_data: str     
+    ai_feedback: str     
     timestamp: datetime = Field(default_factory=datetime.now)
 
 

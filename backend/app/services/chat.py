@@ -1,20 +1,19 @@
-# app/routers/chat.py
 from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 from typing import List
 
-# Import your models, auth, and DB utils
+   
 from app.models import User, ChatHistory
 from app.database import get_session
 from app.services.auth import get_current_user
-# Import the function we created in Part 1
+   
 from app.integrations.app import NutritionAnalyzer
 
 router = APIRouter()
 
-# --- Schemas ---
+   
 class ChatRequest(BaseModel):
     message: str
 
@@ -22,7 +21,7 @@ class ChatResponse(BaseModel):
     response: str
     timestamp: str
 
-# --- Endpoints ---
+   
 
 @router.post("/", response_model=ChatResponse)
 async def chat_with_nutrio(
@@ -37,8 +36,8 @@ async def chat_with_nutrio(
     3. Generates AI response.
     4. Saves interaction to DB.
     """
-    # 2. Fetch History (Last 10 messages)
-    # We fetch usually in descending order (newest first) to limit, then reverse for the AI
+       
+       
     statement = (
         select(ChatHistory)
         .where(ChatHistory.user_id == current_user.id)
@@ -48,7 +47,7 @@ async def chat_with_nutrio(
     result = await db.exec(statement)
     history_records = result.all()
     
-    # Format history for the AI prompt (Oldest -> Newest)
+       
     history_context = ""
     for record in reversed(history_records):
         history_context += f"User: {record.message}\nAI: {record.response}\n"
@@ -56,7 +55,7 @@ async def chat_with_nutrio(
     if not history_context:
         history_context = "No previous conversation."
 
-    # 3. Prepare User Profile for AI
+       
     user_profile = {
         "name": current_user.name,
         "disease": current_user.health_issues,
@@ -64,7 +63,7 @@ async def chat_with_nutrio(
         "allergies": current_user.dietary_preferences
     }
 
-    # 4. Generate AI Response
+       
     ai_result = NutritionAnalyzer.process_chat_message(
         user_message=request.message,
         user_profile=user_profile,
@@ -73,7 +72,7 @@ async def chat_with_nutrio(
 
     ai_text = ai_result['response']
 
-    # 5. Save to Database
+       
     new_chat_entry = ChatHistory(
         user_id=current_user.id,
         message=request.message,

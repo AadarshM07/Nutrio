@@ -78,7 +78,7 @@ class _SearchPageState extends State<SearchPage> with WidgetsBindingObserver {
           _isScanning = false;
         });
 
-        // Resume scanning after 2 seconds
+           
         Future.delayed(const Duration(seconds: 2), () {
           if (mounted) {
             setState(() {
@@ -87,7 +87,7 @@ class _SearchPageState extends State<SearchPage> with WidgetsBindingObserver {
           }
         });
 
-        // Fetch product info based on barcode
+           
         _fetchProductDetails(barcode.rawValue!);
       }
     }
@@ -100,11 +100,11 @@ class _SearchPageState extends State<SearchPage> with WidgetsBindingObserver {
       _isLoading = true;
     });
 
-    // Determine if the query is a barcode (numeric) or text search
+       
     final isBarcode = RegExp(r'^[0-9]+$').hasMatch(query);
 
     if (isBarcode) {
-      // Barcode search - get single product from backend
+         
       final response = await _productService.getProductDetails(query);
 
       if (!mounted) return;
@@ -122,7 +122,7 @@ class _SearchPageState extends State<SearchPage> with WidgetsBindingObserver {
           ),
         );
       } else {
-        // Show ProductNotFoundPage instead of SnackBar
+           
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -131,7 +131,7 @@ class _SearchPageState extends State<SearchPage> with WidgetsBindingObserver {
         );
       }
     } else {
-      // Text search - get multiple products and show results page
+         
       final products = await _productService.searchProducts(query);
 
       if (!mounted) return;
@@ -151,7 +151,7 @@ class _SearchPageState extends State<SearchPage> with WidgetsBindingObserver {
           ),
         );
       } else {
-        // Show ProductNotFoundPage when no results
+           
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -173,7 +173,7 @@ class _SearchPageState extends State<SearchPage> with WidgetsBindingObserver {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Embedded Camera Scanner
+                 
               Container(
                 height: 200,
                 width: double.infinity,
@@ -190,7 +190,7 @@ class _SearchPageState extends State<SearchPage> with WidgetsBindingObserver {
                             controller: _cameraController,
                             onDetect: _onBarcodeDetect,
                           ),
-                          // Scanning indicator overlay
+                             
                           if (_isScanning)
                             Center(
                               child: Container(
@@ -223,7 +223,7 @@ class _SearchPageState extends State<SearchPage> with WidgetsBindingObserver {
                                 ),
                               ),
                             ),
-                          // Corner accents
+                             
                           Positioned(
                             top: 16,
                             left: 16,
@@ -347,7 +347,7 @@ class _SearchPageState extends State<SearchPage> with WidgetsBindingObserver {
                       ),
               ),
               const SizedBox(height: 24),
-              // Search Section Box
+                 
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
@@ -364,7 +364,7 @@ class _SearchPageState extends State<SearchPage> with WidgetsBindingObserver {
                 ),
                 child: Column(
                   children: [
-                    // Scan or search text
+                       
                     RichText(
                       textAlign: TextAlign.center,
                       text: const TextSpan(
@@ -394,7 +394,7 @@ class _SearchPageState extends State<SearchPage> with WidgetsBindingObserver {
                       ),
                     ),
                     const SizedBox(height: 24),
-                    // Search bar with camera icon
+                       
                     Container(
                       decoration: BoxDecoration(
                         color: Colors.grey[300],
@@ -410,7 +410,7 @@ class _SearchPageState extends State<SearchPage> with WidgetsBindingObserver {
                       child: Row(
                         children: [
                           const SizedBox(width: 16),
-                          // Search field
+                             
                           Expanded(
                             child: TextField(
                               controller: _searchController,
@@ -434,7 +434,7 @@ class _SearchPageState extends State<SearchPage> with WidgetsBindingObserver {
                               ),
                             ),
                           ),
-                          // Search button
+                             
                           Padding(
                             padding: const EdgeInsets.all(8.0),
                             child: InkWell(
@@ -476,7 +476,7 @@ class _SearchPageState extends State<SearchPage> with WidgetsBindingObserver {
                 ),
               ),
               const SizedBox(height: 30),
-              // Support section
+                 
               Container(
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
@@ -540,7 +540,7 @@ class _SearchPageState extends State<SearchPage> with WidgetsBindingObserver {
                     const SizedBox(height: 20),
                     ElevatedButton(
                       onPressed: () {
-                        // Handle support action
+                           
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.white.withOpacity(0.3),

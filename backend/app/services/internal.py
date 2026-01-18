@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, Depends
 from typing import Optional
 import httpx
 
-# Internal imports
+   
 from app.schemas.internal import DetailsRequest, CompareRequest
 from app.services.auth import get_current_user
 from app.models import User
