@@ -184,90 +184,124 @@ class NutritionAnalyzer:
                 'success': False,
                 'response': "I'm having trouble connecting right now. Please try again."
             }
-        
-    def analyze_user_dashboard(self, user_profile: dict, inventory_items: list) -> dict:
+    def analyze_user_dashboard(self, user_profile: dict, inventory_items: list, timeline: str = "1 year") -> dict:
         """
-        Analyzes the user's entire inventory against their health profile 
-        to generate dashboard statistics.
+        Analyzes the user's entire inventory by processing the detailed 'product_data' 
+        of each item to predict long-term health outcomes.
         """
-        # 1. Prepare Inventory Text
+        # 1. Prepare Inventory Text with detailed Product Data
         if not inventory_items:
             return {
-                "health_breakdown": [],
-                "macro_distribution": [],
-                "ai_feedback": "Your inventory is empty. Add products to get an analysis."
+                "health_score": 0,
+                "mood_prediction": "Unknown",
+                "body_prediction": "Unknown",
+                "timeline_analysis": "Inventory empty. Please add items to generate a prediction.",
+                "nutrients_of_concern": []
             }
 
-        inventory_text = "User's Current Pantry Inventory:\n"
+        # Build a comprehensive context string from the inventory list
+        inventory_context = "User's Current Dietary Intake (based on Inventory Data):\n"
+        
         for item in inventory_items:
-            # Note: nutrient_scrore is the typo from your model, keeping it consistent
-            inventory_text += f"- {item.title} (Tag: {item.tag}, Grade: {item.nutrient_score})\n"
+            # We access the specific fields defined in your SQLModel/Pydantic schema
+            title = getattr(item, 'title', 'Unknown Product')
+            score = getattr(item, 'nutrient_score', 'N/A')
+            
+            # Access the raw string data stored in the database
+            # We truncate it to 300 chars per item to avoid token overflow if the list is huge
+            raw_data = getattr(item, 'product_data', '')[:300] 
+            
+            inventory_context += f"""
+            - Product: {title}
+              Nutri-Score: {score}
+              Details: {raw_data}
+            """
 
-        # 2. Get RAG Context (General dietary guidelines for their condition)
+        # 2. Get RAG Context (Mechanisms of Action)
         disease = user_profile.get('disease', 'General Health')
-        search_query = f"Dietary guidelines for {disease} regarding pantry staples and macronutrient balance."
         
-        relevant_guidelines = get_relevant_passages(self.db, search_query, n_results=3)
-        guidelines_text = "\n".join([f"- {g['content']}" for g in relevant_guidelines]) if relevant_guidelines else "General healthy eating guidelines."
+        # Search for specific biological mechanisms related to the user's condition
+        search_query = (
+            f"Physiological and psychological effects of diet on {disease}. "
+            f"Mechanisms linking processed food, sugar, and additives to mood and brain structure."
+        )
+        
+        relevant_passages = get_relevant_passages(self.db, search_query, n_results=4)
+        
+        clinical_context = ""
+        if relevant_passages:
+            clinical_context = "\nClinical Evidence & Mechanisms:\n"
+            for p in relevant_passages:
+                clinical_context += f"- {p['content']}\n"
 
-        # 3. Construct System Prompt for JSON Output
+        # 3. Construct the Predictive Prompt
         system_prompt = f"""
-        You are the backend AI for Nutrio. Your task is to analyze a user's food inventory and return a strictly formatted JSON response for a dashboard.
+        You are Nutrio's Medical Prediction Engine.
+        Your task is to analyze the user's *actual* food consumption data to predict their future health trajectory.
 
-        User Profile:
+        USER PROFILE:
         - Condition: {disease}
-        - Goals: {user_profile.get('goals')}
-        - Gender: {user_profile.get('gender')}
-        
-        Medical Guidelines (RAG Context):
-        {guidelines_text}
+        - Gender: {user_profile.get('gender', 'N/A')}
+        - Goals: {user_profile.get('goals', 'N/A')}
+        - Timeline: {timeline}
 
-        {inventory_text}
+        CLINICAL KNOWLEDGE BASE (Source of Truth):
+        {clinical_context}
 
-        Task:
-        1. Classify the inventory items into "Beneficial", "Moderate", or "Avoid" based on the User Profile. Calculate the percentage of each.
-        2. Estimate the aggregate macronutrient profile (Protein, Carbs, Fats, Fiber) represented by this pantry.
-        3. Provide a short, actionable feedback summary (max 50 words) referring to specific items in their list.
+        INVENTORY DATA (The Food They Eat):
+        {inventory_context}
 
-        OUTPUT FORMAT (STRICT JSON ONLY, NO MARKDOWN):
+        TASK:
+        Analyze the "Details" (ingredients/nutrients) of the products listed above. 
+        Predict the specific biological impact on this user if they consume this inventory regularly for {timeline}.
+
+        REQUIREMENTS:
+        1. **Health Score**: 0-100 (Based on nutrient density vs. processing level).
+        2. **Mood Analysis**: Use the ingredient data to predict neurochemical effects (e.g., "High sugar causing dopamine crashes", "Additives linked to anxiety").
+        3. **Body Analysis**: Predict physiological outcomes (e.g., "Inflammation markers may rise due to processed oils found in Product X").
+        4. **Nutrients of Concern**: Identify the specific bad actors hidden in the `product_data`.
+
+        OUTPUT FORMAT (STRICT JSON ONLY):
         {{
-            "health_breakdown": [
-                {{"label": "Beneficial", "value": 60, "color": "#4CAF50"}},
-                {{"label": "Moderate", "value": 30, "color": "#FFC107"}},
-                {{"label": "Limit", "value": 10, "color": "#F44336"}}
+            "health_score": 72,
+            "prediction_summary": "Over the next {timeline}, your current intake of...",
+            "mood_analysis": {{
+                "state": "Variable / Foggy",
+                "mechanism": "The high fructose corn syrup in [Product Name] may disrupt..."
+            }},
+            "body_analysis": {{
+                "state": "Pro-Inflammatory",
+                "mechanism": "The processed seed oils in your inventory are linked to..."
+            }},
+            "key_nutrients": [
+                {{"nutrient": "Sodium", "status": "Excess", "impact": "Water retention"}},
+                {{"nutrient": "Omega-3", "status": "Low", "impact": "Cognitive decline"}}
             ],
-            "macro_distribution": [
-                {{"label": "Protein", "value": 30, "color": "#2196F3"}},
-                {{"label": "Carbs", "value": 50, "color": "#FF9800"}},
-                {{"label": "Fats", "value": 20, "color": "#9C27B0"}}
-            ],
-            "ai_feedback": "Your summary here..."
+            "recommendation": "Try swapping [Unhealthy Item] for a whole-food alternative."
         }}
         """
 
         try:
-            # Using Gemini 1.5 Flash which is good at JSON
             response = client.models.generate_content(
                 model='gemini-2.5-flash',
                 contents=system_prompt,
                 config=genai.types.GenerateContentConfig(
-                    response_mime_type="application/json" 
+                    response_mime_type="application/json"
                 )
             )
             
-            # Parse JSON
-            data = json.loads(response.text)
-            return data
+            return json.loads(response.text)
             
         except Exception as e:
-            print(f"Dashboard Analysis Error: {e}")
-            # Return fallback data
+            print(f"Dashboard Prediction Error: {e}")
             return {
-                "health_breakdown": [{"label": "Error", "value": 100, "color": "#9E9E9E"}],
-                "macro_distribution": [],
-                "ai_feedback": "Unable to generate analysis at the moment."
+                "health_score": 0,
+                "prediction_summary": "Unable to generate prediction.",
+                "mood_analysis": {"state": "N/A", "mechanism": "N/A"},
+                "body_analysis": {"state": "N/A", "mechanism": "N/A"},
+                "key_nutrients": [],
+                "recommendation": "Please try again."
             }
-
 
 def analyze_nutrition(nutrition:dict,disease:str,gender:str='male',goals:str='none',allergies:str='none') -> str:
     analyzer = NutritionAnalyzer(db_name="disease-guidelines")
@@ -290,9 +324,9 @@ def analyze_nutrition(nutrition:dict,disease:str,gender:str='male',goals:str='no
             return "Error"
 
 
-def generate_dashboard_stats(user: dict, inventory: list) -> dict:
+def generate_dashboard_stats(user: dict, inventory: list, timeline:str = "1 year") -> dict:
     analyzer = NutritionAnalyzer(db_name="disease-guidelines")
-    return analyzer.analyze_user_dashboard(user, inventory)
+    return analyzer.analyze_user_dashboard(user, inventory, timeline)
 
 
 def compare_products(

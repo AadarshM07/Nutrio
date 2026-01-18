@@ -4,7 +4,6 @@ import chromadb
 from tqdm import tqdm
 from app.integrations.rag_utils import GeminiEmbeddingFunction
 
-
 def create_documents(path):
     with open(path, 'r') as f:
         data = json.load(f)
@@ -15,43 +14,36 @@ def create_documents(path):
     for item in data:
         parts = []
 
+        # (Your existing text building logic remains the same)
         if item.get("guideline"):
             parts.append(f"Guideline: {item['guideline']}")
-
         if item.get("condition"):
             parts.append(f"Condition: {item['condition']}")
-
         if item.get("category"):
             parts.append(f"Category: {item['category']}")
-
         if item.get("gender"):
             parts.append(f"Gender: {item['gender']}")
-
         if item.get("per_serving_limit"):
-            parts.append(
-                f"Per serving limit: {item['per_serving_limit']} {item.get('unit', '')}"
-            )
-
+            parts.append(f"Per serving limit: {item['per_serving_limit']} {item.get('unit', '')}")
         if item.get("daily_limit"):
-            parts.append(
-                f"Daily limit: {item['daily_limit']} {item.get('unit', '')}"
-            )
+            parts.append(f"Daily limit: {item['daily_limit']} {item.get('unit', '')}")
         if item.get("source"):
             parts.append(f"Source: {item['source']}")
 
         text = ". ".join(parts) + "."
-
         documents.append(text)
+
+        # --- FIX IS HERE ---
+        # ChromaDB crashes on None, so we default to empty strings ""
         metadatas.append({
-            "condition": item.get("condition"),
-            "category": item.get("category"),
-            "gender": item.get("gender"),
-            "unit": item.get("unit"),
-            "source": item.get("source")
+            "condition": item.get("condition", ""),
+            "category": item.get("category", ""),
+            "gender": item.get("gender", "both"), # Default to 'both' if missing
+            "unit": item.get("unit", ""),         # Default to empty string
+            "source": item.get("source", "")
         })
 
     return documents, metadatas
-
 
 def create_chroma_db(documents, metadatas, name):
     chroma_client = chromadb.PersistentClient(path="chroma-db/")
@@ -89,10 +81,10 @@ import os
 
 if __name__ == "__main__":
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    json_path = os.path.join(current_dir, "data", "disease.json")
+    json_path = os.path.join(current_dir, "data", "moodfood.json")
     if not os.path.exists(json_path):
         print(f"Error: File not found at {json_path}")
     else:
         documents, metadatas = create_documents(json_path)
         db_path = os.path.join(current_dir, "chroma-db")
-        create_chroma_db(documents, metadatas, name="disease-guidelines")
+        create_chroma_db(documents, metadatas, name="mood-guidelines")

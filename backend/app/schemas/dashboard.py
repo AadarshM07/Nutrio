@@ -1,17 +1,19 @@
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
 
-class GraphDataPoint(BaseModel):
-    label: str
-    value: float
-    color: str # Hex code for UI
+class ImpactAnalysis(BaseModel):
+    state: str
+    mechanism: str
+
+class KeyNutrient(BaseModel):
+    nutrient: str
+    status: str
+    impact: str
 
 class DashboardAnalysisResponse(BaseModel):
-    # Pie Chart Data (e.g., "Beneficial", "Moderate", "Limit")
-    health_breakdown: List[GraphDataPoint]
-    
-    # Bar/Line Graph Data (Estimated Nutrient breakdown of the pantry)
-    macro_distribution: List[GraphDataPoint]
-    
-    # Text feedback
-    ai_feedback: str
+    health_score: int
+    prediction_summary: str
+    mood_analysis: ImpactAnalysis
+    body_analysis: ImpactAnalysis
+    key_nutrients: List[KeyNutrient]
+    recommendation: str
