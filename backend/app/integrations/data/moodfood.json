@@ -1,0 +1,163 @@
+[
+  {
+    "condition": "Cognitive Decline prevention",
+    "category": "Omega-3 Fatty Acids",
+    "gender": "both",
+    "guideline": "Consume oily fish and nuts to maintain cell membrane integrity and promote neuronal growth. Biological Impact: Associated with improved cognitive function, preserved white matter integrity, and reduced risk of cognitive decline. Specific Outcome: High intake correlates with lower presence and slower progression of white matter hyperintensities.",
+    "source": "IJHSR28.pdf; HSR2-8-e71240.pdf"
+  },
+  {
+    "condition": "Depression and Anxiety",
+    "category": "Carbohydrates (Refined)",
+    "gender": "both",
+    "guideline": "Avoid diets with a high Glycemic Index (GI) to prevent rapid glucose fluctuations. Biological Impact: High glycemic load triggers counter-regulatory hormones (cortisol, adrenaline) which can cause changes in anxiety and irritability. Specific Outcome: Longitudinal data shows an association between progressively higher dietary glycemic index and the incidence of depressive symptoms.",
+    "source": "BMJ - Poor nutrition may be a causal factor..."
+  },
+  {
+    "condition": "Brain Volume Maintenance",
+    "category": "Mediterranean Diet",
+    "gender": "both",
+    "guideline": "Adhere to a diet high in vegetables, fruits, nuts, and olive oil to protect gray matter volume. Biological Impact: Associated with increased volumes of the thalamus, putamen, pallidum, hippocampus, and nucleus accumbens. Specific Outcome: Adherence reduces markers of inflammation, which are linked to hippocampal dysfunction and blood-brain barrier damage.",
+    "source": "HSR2-8-e71240.pdf; BMJ - Poor nutrition may be a causal factor..."
+  },
+  {
+    "condition": "Mood Regulation",
+    "category": "Dietary Fiber & Probiotics",
+    "gender": "both",
+    "guideline": "Consume high-fiber and fermented foods to support the Gut-Brain Axis. Biological Impact: Promotes growth of beneficial bacteria that produce neurotransmitters like serotonin and dopamine; reduces production of inflammatory metabolites. Specific Outcome: Probiotics can alter the brain's response to emotional tasks and reduce depressive symptoms.",
+    "source": "IJHSR28.pdf; BMJ - Poor nutrition may be a causal factor..."
+  },
+  {
+    "condition": "Hippocampal Atrophy",
+    "category": "Western Diet",
+    "gender": "both",
+    "guideline": "Limit intake of processed foods, refined sugars, and unhealthy fats. Biological Impact: Linked to reductions in brain structures, specifically reduced left hippocampal volume. Specific Outcome: High consumption of processed foods at age 10 is linked to smaller cerebral white matter volume.",
+    "source": "HSR2-8-e71240.pdf"
+  },
+  {
+    "condition": "Brain Structure (Women)",
+    "category": "Traditional Japanese Diet",
+    "gender": "female",
+    "guideline": "Adherence to a traditional diet (fish, plant-based) protects against brain atrophy. Biological Impact: Negatively associated with Gray Matter (GM) atrophy in women, but not significantly in men. Specific Outcome: Preservation of total GM volume specifically in the parietal lobe.",
+    "source": "HSR2-8-e71240.pdf"
+  },
+  {
+    "condition": "Overconsumption/Obesity",
+    "category": "Ultra-processed Foods",
+    "gender": "both",
+    "guideline": "Avoid soft-textured ultra-processed foods which increase eating rate. Biological Impact: Soft textures decrease oral processing time, outpacing the satiety response signal (Pillar 3 of appetite control). Specific Outcome: Higher eating rates (g/min) drive increased calorie intake; energy intake is significantly higher on ultra-processed diets compared to unprocessed diets.",
+    "source": "Wiley - Neurobiology of eating behavior..."
+  },
+  {
+    "condition": "Memory and Plasticity",
+    "category": "Polyphenols",
+    "gender": "both",
+    "guideline": "Consume foods rich in polyphenols (fruits, vegetables, tea) for neuroprotection. Biological Impact: Modulates neuroinflammation and promotes synaptic plasticity. Specific Outcome: Green tea consumption is related to smaller hippocampal volume changes (neuroprotective effect).",
+    "source": "IJHSR28.pdf; HSR2-8-e71240.pdf"
+  },
+  {
+    "condition": "Emotional Eating Regulation",
+    "category": "Dopaminergic Reward System",
+    "gender": "adolescent",
+    "guideline": "Monitor sugar and fat intake during adolescence to prevent reward threshold alterations. Biological Impact: Adolescents have hyper-responsive reward centers (ventral striatum); high-fat/sugar foods can alter dopamine connectivity and executive control. Specific Outcome: Obesity and diet can blunt prefrontal cortex functioning, negatively influencing future decision making.",
+    "source": "Wiley - Neurobiology of eating behavior..."
+  },
+  {
+    "condition": "Inflammation-induced Depression",
+    "category": "Saturated Fats",
+    "gender": "both",
+    "guideline": "Limit high-calorie meals rich in saturated fats to prevent immune activation. Biological Impact: Stimulates immune activation and systemic inflammation, which is associated with depression. Specific Outcome: People with depression score significantly higher on measures of 'dietary inflammation'.",
+    "source": "BMJ - Poor nutrition may be a causal factor..."
+  },
+  {
+    "condition": "Fetal Brain Development",
+    "category": "Maternal Diet",
+    "gender": "female (pregnant)",
+    "guideline": "Avoid hypercaloric and high-fat diets during pregnancy. Biological Impact: Maternal high-fat diet alters the density of hypothalamic projections and programs mesocorticolimbic reward circuits in offspring. Specific Outcome: Maternal stress and diet can lead to tactile hyperresponsivity and problem behaviors in children.",
+    "source": "Wiley - Neurobiology of eating behavior..."
+  },
+  {
+    "condition": "Appetite Control",
+    "category": "Protein & Fiber",
+    "gender": "both",
+    "guideline": "Consume foods that stimulate GLP-1 and PYY release (gut-brain axis peptides). Biological Impact: Nutrients in the gut stimulate the release of GLP-1 and PYY from L-cells, which induce satiety and inhibit gastric emptying. Specific Outcome: Prebiotics like inulin-type fructans promote the release of anorexigenic peptides GLP-1 and PYY.",
+    "source": "Wiley - Neurobiology of eating behavior..."
+  },
+  {
+    "condition": "Depression and Structural Plasticity",
+    "category": "Vitamin D",
+    "gender": "both",
+    "guideline": "Maintain optimal Vitamin D levels to support neurotransmitter synthesis and preventing brain atrophy. Biological Impact: Regulates genetic expression of serotonin and dopamine; controls Nerve Growth Factor (NGF) and Glial Cell Line-Derived Neurotrophic Factor (GDNF). Specific Outcome: Deficiency is linked to thinner cortex, enlarged lateral ventricles (atrophy), and white matter damage connecting cognitive/emotional regions.",
+    "source": "DrOracle - Mechanism of Vitamin D in Depression; ResearchGate - Vitamin D and Mental Health"
+  },
+  {
+    "condition": "Anxiety and Stress Response",
+    "category": "Magnesium",
+    "gender": "both",
+    "guideline": "Ensure adequate magnesium intake to modulate the HPA axis and prevent hyper-excitability. Biological Impact: Acts as a voltage-gated antagonist at the NMDA receptor (blocking excitatory glutamate) and an agonist at GABA receptors (calming effect). Specific Outcome: Deficiency increases catecholamine release (adrenaline) and lowers the threshold for stress; supplementation can alleviate anxiety and irritability.",
+    "source": "NCBI - Magnesium and Stress; CanPrev - Magnesium, Anxiety, Depression"
+  },
+  {
+    "condition": "Synaptic Plasticity and Learning",
+    "category": "Zinc",
+    "gender": "both",
+    "guideline": "Consume zinc-rich foods to regulate synaptic activity and prevent glutamate excitotoxicity. Biological Impact: Modulates glutamatergic neurons and stabilizes protein structures essential for neurotransmission; high concentration in the hippocampus and amygdala. Specific Outcome: Deficiency leads to HPA axis disruption (elevated corticosterone) and depression-like behaviors; supplementation reduces depressive symptom scores.",
+    "source": "PMC - Role of Zinc in Neurological Diseases; MDPI - Zinc and CNS Disorders"
+  },
+  {
+    "condition": "Neurogenesis and Mood",
+    "category": "Curcumin (Turmeric)",
+    "gender": "both",
+    "guideline": "Incorporate curcumin to enhance Brain-Derived Neurotrophic Factor (BDNF) and serotonin. Biological Impact: Inhibits Monoamine Oxidase (MAO) enzymes, increasing serotonin/dopamine; reduces neuroinflammation and oxidative stress. Specific Outcome: Chronic administration prevents depressive-like behavior by regulating synaptic structural plasticity in the amygdala.",
+    "source": "Oxford Academic - Curcumin and Amygdala Plasticity; PMC - Curcumin in Depression"
+  },
+  {
+    "condition": "Cognitive Resilience and Plasticity",
+    "category": "Intermittent Fasting",
+    "gender": "both",
+    "guideline": "Adopt intermittent fasting protocols to stimulate neurotrophic factors and improve bioenergetics. Biological Impact: Increases BDNF and Neurotrophin 3 (NT3); promotes ketone body production (3-β-hydroxybutyrate) which fuels neurons when glucose is low. Specific Outcome: Enhances hippocampal neurogenesis, improves insulin sensitivity in neurons, and reduces inflammatory mediators like IL-6 and CRP.",
+    "source": "PMC - Impact of Intermittent Fasting on BDNF; Journal of Drug Delivery & Therapeutics - Neuroprotective Effects of IF"
+  },
+  {
+    "condition": "Cognitive Function and Mood Stability",
+    "category": "Hydration",
+    "gender": "both",
+    "guideline": "Prevent even mild dehydration (loss of >2% body mass) to maintain executive function. Biological Impact: Dehydration increases cortisol (stress hormone) production and decreases serotonin/dopamine; alters electrolyte balance affecting neurotransmission. Specific Outcome: Mild dehydration impairs attention, executive function, and motor coordination; linked to increased anxiety, fatigue, and 'brain fog'.",
+    "source": "Cleveland Clinic - Dehydration and Mental Health; Alzheimer's Drug Discovery Foundation"
+  },
+  {
+    "condition": "Stress Regulation (Psychobiotics)",
+    "category": "Specific Probiotic Strains",
+    "gender": "both",
+    "guideline": "Consume specific psychobiotics like Bifidobacterium longum or Lactobacillus helveticus. Biological Impact: Modulates the HPA axis to reduce cortisol; communicates with the brain via the vagus nerve and immune pathways. Specific Outcome: Depletion of Coprococcus and Dialister bacteria is consistently found in patients with depression; specific strains reduce urinary free cortisol.",
+    "source": "PMC - Gut Microbiome and Mental Health; Taylor & Francis - Psychobiotics"
+  },
+  {
+    "condition": "Neuroinflammation and Memory",
+    "category": "Scutellaria baicalensis & Saffron",
+    "gender": "both",
+    "guideline": "Combine natural anti-inflammatory compounds for synergistic mood benefits. Biological Impact: Reduces production of pro-inflammatory cytokines and enhances neurotrophic factor expression. Specific Outcome: Synergistic effect observed in ameliorating anxiety and depression with minimal side effects compared to placebo.",
+    "source": "PMC - Nutrition and Neuro Sciences Editorial"
+  },
+  {
+    "condition": "Episodic Memory",
+    "category": "Selenium",
+    "gender": "elderly",
+    "guideline": "Monitor selenium levels to support memory function, particularly in at-risk genetic groups. Biological Impact: Critical for antioxidant defense in the brain; interaction with APOE4 status affects memory outcomes. Specific Outcome: Linked to episodic memory performance in APOE4-negative elderly participants.",
+    "source": "PMC - Nutrition and Neuro Sciences Editorial"
+  },
+  {
+    "condition": "Decision Making & Impulse Control",
+    "category": "Western Diet (High Fat/Sweet)",
+    "gender": "female (young)",
+    "guideline": "Limit consumption of processed, sweet, and fatty foods to maintain effective communication between reward and evaluation centers. Biological Impact: Chronic consumption is associated with reduced Resting-State Functional Connectivity (rsFC) between the Nucleus Accumbens (reward perception) and the Lateral Orbitofrontal Cortex (hedonic valuation). Specific Outcome: Reduced top-down cognitive control over food choices; higher emotional eating scores; altered conflict resolution processing in the Anterior Cingulate Cortex.",
+    "source": "Frontiers in Nutrition - Coquery et al. (2022)"
+  },
+  {
+    "condition": "Conflict Resolution & Attention",
+    "category": "Western Diet (High Meat/Processed)",
+    "gender": "female (young)",
+    "guideline": "Reduce intake of processed meats and refined sugars to preserve motivation-control pathways. Biological Impact: Inverse correlation observed between the Right Insula (gustatory/interoception) and the Anterior Cingulate Cortex (conflict monitoring). Specific Outcome: Impaired ability to resolve cognitive conflicts during food choices (e.g., choosing between health vs. taste), leading to less efficient decision-making.",
+    "source": "Frontiers in Nutrition - Coquery et al. (2022)"
+  }
+]

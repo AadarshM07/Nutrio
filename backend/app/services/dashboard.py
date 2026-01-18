@@ -14,6 +14,7 @@ router = APIRouter()
 
 @router.get("/stats", response_model=DashboardAnalysisResponse)
 async def get_dashboard_stats(
+    timeline: str,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_session)
 ):
@@ -37,6 +38,6 @@ async def get_dashboard_stats(
 
     # 3. Call AI Service
     # This function (defined in app.integrations.app) handles the RAG + Prompting
-    analysis_result = generate_dashboard_stats(user_profile, inventory_items)
+    analysis_result = generate_dashboard_stats(user_profile, inventory_items,timeline)
 
     return analysis_result
